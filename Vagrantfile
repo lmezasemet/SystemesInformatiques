@@ -73,7 +73,9 @@ Vagrant.configure(2) do |config|
      sudo apt-get install -y texlive-latex-extra
      sudo apt-get install -y texlive-fonts-recommended
      sudo apt-get install -y python-sphinxcontrib.spelling
-     sudo apt-get install -y hunspell hunspell-fr       
+     sudo apt-get install -y hunspell hunspell-fr
+     sudo apt-get install -y python-pip
+     sudo pip install -e git+https://github.com/bitprophet/alabaster/#egg=alabaster 
   SHELL
    #     sudo apt-get install -y python-setuptools
    #     sudo apt-get install -y mscgen
