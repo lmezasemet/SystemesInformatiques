@@ -35,18 +35,28 @@ Introduction
 
 Langage C
 *********
-
 .. toctree::
    :maxdepth: 2
 
    C/intro-C
    C/datatypes
    C/malloc
+   C/malloc_implementation
    C/linker
 
+Structure des ordinateurs
+*************************
+.. toctree::
+   :maxdepth: 2
 
+   Assembleur/memory
 
-   
+Organisation d'un système d'exploitation
+****************************************
+.. toctree::
+   :maxdepth: 2
+
+   OS_design/os_structure
 
 Systèmes Multiprocesseurs
 *************************
@@ -56,18 +66,24 @@ Systèmes Multiprocesseurs
    Threads/threads
    Threads/threads2
    Threads/coordination
+   Threads/processus
 
-   
-..   Threads/processus
+Fichiers
+********
 
+.. toctree::
+   :maxdepth: 2
 
-Gestion des fichiers 
-********************
+   Fichiers/fichiers
+   Fichiers/fichiers-signaux
 
-.. toctree:: 
-   :maxdepth: 2 
+Mémoire virtuelle
+*****************
 
-   Fichiers/fichiers 
+.. toctree::
+   :maxdepth: 2
+
+   MemoireVirtuelle/vmem
 
 *******
 Annexes
