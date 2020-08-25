@@ -25,6 +25,8 @@ Cette machine virtuelle ne fournit pas d'interface graphique et vous serez donc 
 
 Vous êtes maintenant en mesure de compiler le projet sous différents formats (consultez le [Makefile](https://github.com/obonaventure/SystemesInformatiques/blob/master/Makefile) pour plus d'informations). Vous pouvez notamment le compiler au format HTML avec `make html`, au format epub avec `make epub` ou encore au format PDF avec `make latexpdf` pour créer les fichiers LaTeX à compiler à l'aide de pdflatex. Le projet compilé est alors accessible dans le répertoire `_build/nom_du_format`.
 
+FIXME: Il faut compiler les différentes parties séparément, e.g. pour la Théorie utiliser `make html` dans le répertoire correspondant.
+
 Finalement, lorsque que vous avez terminé de travailler sur le projet, vous pouvez exécuter la commande `vagrant destroy` pour supprimer toutes les traces de la machine virtuelle précédemment créée.
 
 Intégration continue
