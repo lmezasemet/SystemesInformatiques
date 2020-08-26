@@ -23,7 +23,7 @@ Les performances des microprocesseurs se sont continuellement améliorées depui
    Evolution du nombre de transistors par microprocesseur
 
 
-Cette évolution avait été prédite par Gordon Moore dans les années 1960s [Stokes2008]_. Il a formulé en 1965 une hypothèse qui prédisait que le nombre de composants par puce continuerait à doubler tous les douze mois pour la prochaine décennie. Cette prédiction s'est avérée tout à fait réaliste. Elle est maintenant connue sous le nom de :term:`Loi de Moore` et est fréquemment utilisée pour expliquer les améliorations de performance des ordinateurs.
+Cette évolution avait été prédite par Gordon Moore dans les années 1960s [Stokes2008]_. Il a formulé en 1965 une hypothèse qui prédisait que le nombre de composants par puce continuerait à doubler tous les douze mois au cours de la prochaine décennie. Cette prédiction s'est avérée tout à fait réaliste. Elle est maintenant connue sous le nom de :term:`Loi de Moore` et est fréquemment utilisée pour expliquer les améliorations de performance des ordinateurs.
 
 Le fonctionnement d'un microprocesseur est régulé par une horloge. Celle-ci rythme la plupart des opérations du processeur et notamment le chargement des instructions depuis la mémoire. Pendant de nombreuses années, les performances des microprocesseurs ont fortement dépendu de leur vitesse d'horloge. Les premiers microprocesseurs avaient des fréquences d'horloge de quelques centaines de :term:`kHz`. A titre d'exemple, le processeur intel 4004 avait une horloge à 740 kHz en 1971. Aujourd'hui, les processeurs rapides dépassent la fréquence de 3 :term:`GHz`. La figure ci-dessous présente l'évolution de la fréquence d'horloge des microprocesseurs depuis les années 1970s [#fperf]_. On remarque une évolution rapide jusqu'aux environs du milieu de la dernière décennie. La barrière des 10 MHz a été franchie à la fin des années 1970s. Les 100 :term:`MHz` ont étés atteints en 1994 et le GHz aux environs de l'an 2000.
 
@@ -146,7 +146,7 @@ Cette capacité d'exécuter plusieurs threads d'exécution simultanément n'est 
 
 .. note:: D'autres types de threads
 
- A côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment implémenter des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes implémentations des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter sur le même processeur.
+À côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment implémenter des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes implémentations des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter sur le même processeur.
 
 
 
