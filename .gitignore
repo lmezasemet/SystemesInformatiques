@@ -6,3 +6,4 @@ _build
 web/
 #Info on vagrant image
 .vagrant
+.DS_Store
