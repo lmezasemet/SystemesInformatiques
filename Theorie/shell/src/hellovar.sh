@@ -1,4 +1,4 @@
 #!/bin/bash
-PROG="LEPL"
-COURS=1503
+PROG="LINFO"
+COURS=1252
 echo $PROG$COURS
