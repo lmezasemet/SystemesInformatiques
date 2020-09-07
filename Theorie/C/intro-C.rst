@@ -177,32 +177,28 @@ Toutes les tables de caractères placent les chiffres ``0`` à ``9`` à des posi
 .. literalinclude:: src/filterdigit.c
    :language: c
 
-
-
-
-
-.. topic:: Pages de manuel
-
-  Les systèmes d'exploitation de la famille Unix contiennent un grand nombre de librairies, d'appels systèmes et d'utilitaires. Toutes ces fonctions et tous ces programmes sont documentés dans des pages de manuel qui sont accessibles via la commande ``man``. Les pages de manuel sont organisées en 8 sections.
-
-   - Section 1: Utilitaires disponibles pour tous les utilisateurs
-   - Section 2: Appels systèmes en C
-   - Section 3: Fonctions de la librairie
-   - Section 4: Fichiers spéciaux
-   - Section 5: Formats de fichiers et conventions pour certains types de fichiers
-   - Section 6: Jeux
-   - Section 7: Utilitaires de manipulation de fichiers textes
-   - Section 8: Commandes et procédure de gestion du système
-
-  Dans le cadre de ce cours, nous aborderons principalement les fonctionnalités décrites dans les trois premières sections des pages de manuel. L'accès à une page de manuel se fait via la commande ``man`` avec comme argument le nom de la commande concernée. Vous pouvez par exemple obtenir la page de manuel de ``gcc`` en tapant ``man gcc``. ``man`` supporte plusieurs paramètres qui sont décrits dans sa page de manuel accessible via ``man man``. Dans certains cas, il est nécessaire de spécifier la section du manuel demandée. C'est le cas par exemple pour ``printf`` qui existe comme utilitaire (section 1) et comme fonction de la librairie (section 3 - accessible via ``man 3 printf``).
-
-  Outre ces pages de manuel locales, il existe également de nombreux sites web où l'on peut accéder aux pages de manuels de différentes versions de Unix dont notamment :
-
-   - les pages de manuel de `Debian GNU/Linux <http://manpages.debian.net/>`_
-   - les pages de manuel de `FreeBSD <http://www.freebsd.org/cgi/man.cgi>`_
-   - les pages de manuel de `MacOS <http://developer.apple.com/documentation/Darwin/Reference/ManPages/index.html>`_
-
-  Dans la version en-ligne de ces notes, toutes les références vers un programme Unix, un appel système ou une fonction de la librairie pointent vers la page de manuel Linux correspondante.
+.. .. topic:: Pages de manuel
+..
+..   Les systèmes d'exploitation de la famille Unix contiennent un grand nombre de librairies, d'appels systèmes et d'utilitaires. Toutes ces fonctions et tous ces programmes sont documentés dans des pages de manuel qui sont accessibles via la commande ``man``. Les pages de manuel sont organisées en 8 sections.
+..
+..    - Section 1: Utilitaires disponibles pour tous les utilisateurs
+..    - Section 2: Appels systèmes en C
+..    - Section 3: Fonctions de la librairie
+..    - Section 4: Fichiers spéciaux
+..    - Section 5: Formats de fichiers et conventions pour certains types de fichiers
+..    - Section 6: Jeux
+..    - Section 7: Utilitaires de manipulation de fichiers textes
+..    - Section 8: Commandes et procédure de gestion du système
+..
+..   Dans le cadre de ce cours, nous aborderons principalement les fonctionnalités décrites dans les trois premières sections des pages de manuel. L'accès à une page de manuel se fait via la commande ``man`` avec comme argument le nom de la commande concernée. Vous pouvez par exemple obtenir la page de manuel de ``gcc`` en tapant ``man gcc``. ``man`` supporte plusieurs paramètres qui sont décrits dans sa page de manuel accessible via ``man man``. Dans certains cas, il est nécessaire de spécifier la section du manuel demandée. C'est le cas par exemple pour ``printf`` qui existe comme utilitaire (section 1) et comme fonction de la librairie (section 3 - accessible via ``man 3 printf``).
+..
+..   Outre ces pages de manuel locales, il existe également de nombreux sites web où l'on peut accéder aux pages de manuels de différentes versions de Unix dont notamment :
+..
+..    - les pages de manuel de `Debian GNU/Linux <http://manpages.debian.net/>`_
+..    - les pages de manuel de `FreeBSD <http://www.freebsd.org/cgi/man.cgi>`_
+..    - les pages de manuel de `MacOS <http://developer.apple.com/documentation/Darwin/Reference/ManPages/index.html>`_
+..
+..   Dans la version en-ligne de ces notes, toutes les références vers un programme Unix, un appel système ou une fonction de la librairie pointent vers la page de manuel Linux correspondante.
 
 .. spelling::
 

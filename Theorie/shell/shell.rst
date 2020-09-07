@@ -16,18 +16,41 @@ Unix a été conçu à l'époque des mini-ordinateurs. Un mini-ordinateur servai
 
 Unix ayant été initialement développé pour manipuler des documents contenant du texte, il comprend de nombreux utilitaires facilitant ces traitements. Une description détaillée de l'ensemble de ces utilitaires sort du cadre de ce cours. De nombreux livres et ressources Internet fournissent une description détaillée. Voici cependant une brève présentation de quelques utilitaires de manipulation de texte qui peuvent s'avérer très utiles en pratique.
 
- - `cat(1)`_ : utilitaire permettant notamment d'afficher le contenu d'un fichier sur la sortie standard.
- - `echo(1)`_ : utilitaire permettant d'afficher sur la sortie standard une chaîne de caractères passée en argument.
+ - `cat(1)`_ : utilitaire permettant notamment de lire et afficher le contenu d'un fichier.
+ - `echo(1)`_ : utilitaire permettant d'afficher une chaîne de caractères passée en argument.
  - `head(1)`_ et `tail(1)`_ : utilitaires permettant respectivement d'extraire le début ou la fin d'un fichier.
  - `wc(1)`_ : utilitaire permettant de compter le nombre de caractères et de lignes d'un fichier.
  - `grep(1)`_ : utilitaire permettant notamment d'extraire d'un fichier texte les lignes qui contiennent ou ne contiennent pas une chaîne de caractères passée en argument.
  - `sort(1)`_ : utilitaire permettant de trier les lignes d'un fichier texte.
- - `uniq(1)`_ : utilitaire permettant de filtrer le contenu d'un fichier texte afin d'en extraire les lignes qui sont uniques ou dupliquées (requiert que le fichier d'entrée soit trié, car ne compare que les lignes consécutives).
- - `more(1)`_ : utilitaire permettant d'afficher page par page un fichier texte sur la sortie standard (`less(1)`_  est une variante courante de `more(1)`_).
+ - `uniq(1)`_ : utilitaire permettant de filtrer le contenu d'un fichier texte afin d'en extraire les lignes qui sont uniques ou dupliquées (cela requiert que le fichier d'entrée soit trié, car ne compare que les lignes consécutives).
+ - `more(1)`_ : utilitaire permettant d'afficher page par page un fichier texte (`less(1)`_  est une variante courante de `more(1)`_).
  - `gzip(1)`_ et `gunzip(1)`_ : utilitaires permettant respectivement de compresser et de décompresser des fichiers. Les fichiers compressés prennent moins de place sur le disque que les fichiers standard et ont par convention un nom qui se termine par ``.gz``.
  - `tar(1)`_ : utilitaire permettant de regrouper plusieurs fichiers dans une archive. Souvent utilisé en combinaison avec `gzip(1)`_ pour réaliser des backups ou distribuer des logiciels.
  - `sed(1)`_ : utilitaire permettant d'éditer, c'est-à-dire de modifier les caractères présents dans un flux de données.
- - `awk(1)`_ : utilitaire incluant un petit langage de programmation et qui permet d'écrire rapidement de nombreux programmes de manipulation de fichiers textes.
+ - `awk(1)`_ : utilitaire incluant un petit langage de programmation et qui permet d'écrire rapidement de nombreux programmes de manipulation de fichiers de texte.
+
+.. topic:: Pages de manuel
+
+  Les systèmes d'exploitation de la famille Unix contiennent un grand nombre de librairies, d'appels systèmes et d'utilitaires. Toutes ces fonctions et tous ces programmes sont documentés dans des pages de manuel qui sont accessibles via la commande ``man``. Les pages de manuel sont organisées en 8 sections.
+
+   - Section 1: Utilitaires disponibles pour tous les utilisateurs
+   - Section 2: Appels systèmes en C
+   - Section 3: Fonctions de la librairie
+   - Section 4: Fichiers spéciaux
+   - Section 5: Formats de fichiers et conventions pour certains types de fichiers
+   - Section 6: Jeux
+   - Section 7: Utilitaires de manipulation de fichiers textes
+   - Section 8: Commandes et procédure de gestion du système
+
+  Dans le cadre de ce cours, nous aborderons principalement les fonctionnalités décrites dans les trois premières sections des pages de manuel. L'accès à une page de manuel se fait via la commande ``man`` avec comme argument le nom de la commande concernée. Vous pouvez par exemple obtenir la page de manuel de ``gcc`` en tapant ``man gcc``. ``man`` supporte plusieurs paramètres qui sont décrits dans sa page de manuel accessible via ``man man``. Dans certains cas, il est nécessaire de spécifier la section du manuel demandée. C'est le cas par exemple pour ``printf`` qui existe comme utilitaire (section 1) et comme fonction de la librairie (section 3 - accessible via ``man 3 printf``).
+
+  Outre ces pages de manuel locales, il existe également de nombreux sites web où l'on peut accéder aux pages de manuels de différentes versions de Unix dont notamment :
+
+   - les pages de manuel de `Debian GNU/Linux <http://manpages.debian.net/>`_
+   - les pages de manuel de `FreeBSD <http://www.freebsd.org/cgi/man.cgi>`_
+   - les pages de manuel de `MacOS <http://developer.apple.com/documentation/Darwin/Reference/ManPages/index.html>`_
+
+  Dans la version en-ligne de ces notes, toutes les références vers un programme Unix, un appel système ou une fonction de la librairie pointent vers la page de manuel Linux correspondante.
 
 Shell
 ^^^^^
@@ -36,15 +59,15 @@ Avant le développement des interfaces graphiques telles que :term:`X11`, :term:
 
 Un :term:`shell` est un programme qui a été spécialement conçu pour faciliter l'utilisation d'un système Unix via le clavier. De nombreux shells Unix existent. Les plus simples permettent à l'utilisateur de taper une série de commandes à exécuter en les combinant. Les plus avancés sont des interpréteurs de commandes qui supportent un langage complet permettant le développement de scripts plus ou moins ambitieux. Dans le cadre de ce cours, nous utiliserons `bash(1)`_ qui est un des shells les plus populaires et les plus complets. La plupart des commandes `bash(1)`_ que nous utiliserons sont cependant compatibles avec de nombreux autres shells tels que `zsh <http://www.zsh.org>`_ ou `csh <https://github.com/tcsh-org/tcsh>`_.
 
-Bien que les interfaces graphiques se soient désormais généralisées, le shell reste un moyen d'interaction avec le système parfaitement complémentaire, particulièrement utile pour les informaticiens, ou toute personne devant automatiser des traitements et opérations sur un système informatique. Avec les interfaces graphiques actuelles, le shell est accessible par l'intermédiaire d'une application qui est généralement appelée ``terminal`` ou ``console``. 
+Bien que les interfaces graphiques se soient désormais généralisées, le shell reste un moyen d'interaction avec le système parfaitement complémentaire, particulièrement utile pour les informaticiens, ou toute personne devant automatiser des traitements et opérations sur un système informatique. Avec les interfaces graphiques actuelles, le shell est accessible par l'intermédiaire d'une application qui est généralement appelée ``terminal`` ou ``console``.
 
-Lorsqu'un utilisateur se connecte à un système Unix, en direct ou à travers une connexion réseau, le système vérifie son mot de passe puis exécute automatiquement le shell qui est associé à cet utilisateur depuis son répertoire par défaut. Ce shell permet à l'utilisateur d'exécuter et de combiner des commandes. Un shell supporte deux types de commande : les commandes internes qu'il implémente directement et les commandes externes qui font appel à un utilitaire stocké sur disque. Un exemple de commande interne est `cd(1)`_ qui prend comme argument un chemin (relatif ou absolu) et y positionne le répertoire courant. Les utilitaires présentés dans la section précédente sont des exemples de commandes externes.
+Lorsqu'un utilisateur se connecte à un système Unix, en direct ou à travers une connexion réseau, le système vérifie son mot de passe puis exécute automatiquement le shell qui est associé à cet utilisateur depuis son répertoire par défaut. Ce shell permet à l'utilisateur d'exécuter et de combiner des commandes. Un shell supporte deux types de commande : les commandes internes qu'il implémente directement et les commandes externes qui font appel à un utilitaire stocké sur disque. Un exemple de commande interne est `cd(1posix)`_ qui prend comme argument un chemin (relatif ou absolu) et y positionne le répertoire courant. Les utilitaires présentés dans la section précédente sont des exemples de commandes externes.
 
-.. note:: Obtenir de l'aide sur une commande
-
- La commande `man(1)`_ permet d'obtenir la documentation associée à une commande externe. Par exemple, `man ls` permet d'obtenir la documentation de la commande `ls` et en particulier de lister les arguments et paramètres reconnus par cette commande.
- 
- **Attention :** `man(1)`_ permet de spécifier dans quel section de la documentation la page de documentation doit être recherchée. Il existe en effet 8 sections. La page de manuel de `man(1)`_ liste ces sections : on l'obtient avec la commande `man man`. Par exemple, `printf` peut référer aussi bien en section (1) à une commande externe qu'en section (3) à la fonction de la librairie standard du langage C. `man printf` présente par défaut la première occurence, celle en section (1). Pour obtenir la documentation de la fonction `printf` de la librairie standard C il faut spécifier la section avec la commande `man 3 printf`.
+.. .. note:: Obtenir de l'aide sur une commande
+..
+..  La commande `man(1)`_ permet d'obtenir la documentation associée à une commande externe. Par exemple, `man ls` permet d'obtenir la documentation de la commande `ls` et en particulier de lister les arguments et paramètres reconnus par cette commande.
+..
+..  **Attention :** `man(1)`_ permet de spécifier dans quel section de la documentation la page de documentation doit être recherchée. Il existe en effet 8 sections. La page de manuel de `man(1)`_ liste ces sections : on l'obtient avec la commande `man man`. Par exemple, `printf` peut référer aussi bien en section (1) à une commande externe qu'en section (3) à la fonction de la librairie standard du langage C. `man printf` présente par défaut la première occurence, celle en section (1). Pour obtenir la documentation de la fonction `printf` de la librairie standard C il faut spécifier la section avec la commande `man 3 printf`.
 
 Voici quelques exemples d'utilisation de commandes externes.
 
@@ -112,7 +135,7 @@ Par convention en `bash(1)`_, le caractère ``#`` marque le début d'un commenta
 .. literalinclude:: src/hellovar.sh
    :language: bash
    
-On note dans l'exemple ci-dessus l'utilisation du symbole ``$`` pour référer à la valeur de la variable. Dans la majorité des cas, cette notation suffit. Il y a une subtilité auxquelles ont doit faire attention: si il y a une ambiguïté possible sur le nom de la variable pour l'interpréteur il convient d'entourer son nom d'accolades ``{ }``. Par exemple, ``milieu = "mi"; echo do$mino`` affichera ``do`` seulement car l'interpréteur considère la seconde partie comme la variable ``$mino`` non définie et donc égale à la chaîne vide. Avec ``echo do${mi}no`` le résultat est celui attendu.
+On note dans l'exemple ci-dessus l'utilisation du symbole ``$`` pour référer à la valeur de la variable. Dans la majorité des cas, cette notation suffit. Il y a une subtilité auxquelles ont doit faire attention : si il y a une ambiguïté possible sur le nom de la variable pour l'interpréteur il convient d'entourer son nom d'accolades ``{ }``. Par exemple, ``milieu = "mi"; echo do$mino`` affichera ``do`` seulement car l'interpréteur considère la seconde partie comme la variable ``$mino`` non définie et donc égale à la chaîne vide (et cela sans générer de message d'erreur). Avec ``echo do${mi}no``, par contre, le résultat est celui attendu.
 
 Un script `bash(1)`_ peut également prendre des arguments passés en ligne de commande. Par convention, ceux-ci ont comme noms ``$1``, ``$2``, ``$3``, ... Le nombre d'arguments s'obtient avec ``$#`` et la liste complète avec ``$@``. L'exemple ci-dessous illustre l'utilisation de ces arguments.
 
@@ -129,12 +152,12 @@ Concernant le traitement des arguments par un script bash, il est utile de noter
 .. literalinclude:: src/args.out
         :language: console
 
-Scripts : structures de contrôle
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Scripts : conditionnelles
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Un script permet d'utiliser des structures de contrôle comme dans tout langage de programmation.
 
-`bash(1)`_ supporte tout d'abord la construction ``if [ condition ]; then ... fi`` qui permet notamment de comparer les valeurs de variables. `bash(1)`_ définit de nombreuses conditions différentes, dont notamment :
+`bash(1)`_ supporte tout d'abord la construction conditionnelle ``if [ condition ]; then ... fi`` qui permet notamment de comparer les valeurs de variables. `bash(1)`_ définit de nombreuses conditions différentes, dont notamment :
 
  - ``$i -eq $j`` est vraie lorsque les deux variables ``$i`` et ``$j`` contiennent le même nombre.
  - ``$i -lt $j`` est vraie lorsque la valeur de la variable ``$i`` est numériquement strictement inférieure à celle de la variable ``$j``
@@ -156,8 +179,34 @@ Un autre exemple d'utilisation des codes de retour est le script :download:`src/
 
 Ce programme utilise le fichier spécial ``/dev/null``. Celui-ci est en pratique l'équivalent d'un trou noir. Il accepte toutes les données en écriture mais celles-ci ne peuvent jamais être relues. ``/dev/null`` est très utile lorsque l'on veut ignorer la sortie d'un programme et éviter qu'elle ne s'affiche sur le terminal. `bash(1)`_ supporte également ``/dev/stdin`` pour représenter l'entrée standard, ``/dev/stdout`` pour la sortie standard et ``/dev/stderr`` pour l'erreur standard.
 
-On utilise régulièrement des boucles pour répéter une opération pour plus arguments (par exemple, appliquer un traitement à plusieurs fichiers).
-Voici un exemple d'utilisation de la boucle for, 
+Les scripts servent souvent à réaliser des opérations sur des fichiers, et il est parfois nécessaire de pouvoir tester si un fichier est présent, n'est pas vide, etc. On peut alors utiliser les conditions suivantes :
+
+ - ``-f file`` est vraie si ``file`` existe et est un fichier;
+ - ``-s file`` est vraie si ``file`` n'est pas vide;
+ - ``-r file``, ``-w file``, ``-x file`` est vraie si ``file`` peut, respectivement, être *lu*, *écrit* ou *exécuté* par l'utilisateur lançant le script;
+ - ``-s file`` est vraie si ``file`` est le nom d'un répertoire.
+ 
+L'exemple ci-dessous illustre l'utilisation des conditions sur les fichiers :
+
+.. literalinclude:: src/exemple_if_files.sh
+   :language: bash
+
+On note l'utilisation du combinateur logique de négation ``!`` pour la troisième condition. Deux autres opérateurs logiques sont disponibles : ``-a`` est le ET logique (AND) et le ``-o`` est le OU logique (OR) :
+
+ - ``-a`` renvoie une valeur positive (faux) si au moins une des deux conditions renvoie une valeur positive, et 0 sinon (vrai);
+ - ``-o`` renvoie une valeur positive (faux) si les deux conditions renvoient une valeur positive, et 0 sinon (vrai).
+
+La deuxième et la troisième condition de l'exemple ci-dessus peuvent ainsi être combinées de la manière suivante :
+
+.. literalinclude:: src/exemple_if_files_compact.sh
+   :language: bash
+
+La structure ``case`` permet de vérifier une entrée contre une série de motifs. Cela est souvent utile, par exemple, pour l'analyse des paramètres fournis à un script (en utilisant ``-`` et ``--``). La description de ``case`` dépasse cependant le cadre de ce cours.
+
+Scripts : boucles
+^^^^^^^^^^^^^^^^^
+
+On utilise régulièrement des boucles pour répéter une opération pour plusieurs argument. Voici un exemple d'utilisation de la boucle ``for`` :
 
 .. literalinclude:: src/exemple_for.sh
    :language: bash
@@ -165,21 +214,26 @@ Voici un exemple d'utilisation de la boucle for,
 .. literalinclude:: src/exemple_for.sh.out
         :language: console
 
-Une utilisation courante de la boucle for est pour 
+Une utilisation courante de la boucle ``for`` est pour répéter un même traitement sur tous les fichiers présents dans une liste. La boucle est alors un itérateur : pour chaque itération la variable `s` prend une des valeurs des éléments de la liste séparés par des espaces. 
 
-TODO terminer et mentionner l'utilisation de cut etc. 
+Cet exemple utilise, par ailleurs, une autre construction utile de `bash(1)`_ : les symboles d'apostrophe inversée ``\```. Ceux-ci permettent d'obtenir le résultat (envoyé sur :term:`stdout`) de l'exécution de la commande qu'il englobent. Examinons en détail cette commande. Celle-ci combine en utilisant un :term:`pipe` les commandes `wc(1)`_ et `cut(1)`_. La première permet d'obtenir le nombre de ligne du fichier fourni en paramètre (utilisation de l'option ``-l``). Toutefois, la sortie de la commande contient trop d'information (par exemple, ``wc -l TP1-Hakim.txt`` renvoie ``      28 TP1-Hakim.txt``). Afin d'isoler l'information qui nous intéressent, l'utilitaire `cut(1)`_ est utilisé. Celui-ci permet ici de sélectionner quelle colonne (la première ici) conserver, lorsque les colonnes sont séparées par des espaces (comme spécifié en utilisant l'option ``-d' '`).
 
-Les boucles for sont supportées et sont généralement utilisées 
+La boucle ``for`` peut aussi prendre comme entrée (liste sur laquelle itérer) une expression utilisant des caractères *joker* ``*`` ou ``?``. `bash(1)`_ transforme alors l'expression en la liste des noms de fichiers et répertoires dans le répertoire courant correspondant à l'expression :
 
+ - ``*`` représente n'importe quelle suite de caractères (y compris la chaîne vide). ``ab*xyz`` correspond à, par exemple, ``abcdxyz`` ou ``abcxyz`` mais pas à ``abcdyz``.
+ - ``?`` représente un caractère unique inconnu (mais pas la chaîne vide). ``ab?de`` correspond, ainsi, à ``abcde``, ``abXde`` mais pas à ``abde``.
+ 
+Voici un exemple de l'utilisation du caractère ``*``, qui calcule une signature de chaque fichier sous la forme d'un *hash*  `SHA-1 <https://fr.wikipedia.org/wiki/SHA-1>`_ :
 
-TODO ajouter du contenu sur for, fonctions
+.. literalinclude:: src/exemple_for2.sh
+   :language: bash
 
-à recycler :
- .. - Si la variable peut contenir une chaîne de caractères avec des espaces, il peut être nécessaire d'entourer le nom de la variable avec des double-quotes : ``message="Hello world!" si l'on souhaite que la valeur ne soit pas considérée comme plusieurs mots distincts. Ceci est particulièrement 
+.. literalinclude:: src/exemple_for2.sh.out
+        :language: console
 
+`bash(1)`_ permet aussi l'utilisation de boucles ``while`` et ``until`` sur un principe similaire, mais nous ne les couvrirons pas dans ce cours.
 
-
-Une description complète de `bash(1)`_ sort du cadre de ce cours. De nombreuses références à ce sujet sont disponibles [Cooper2011]_.
+De nombreuses références sont disponibles pour aller plus loin dans la maîtrise de `bash(1)`_ [Cooper2011]_.
 
 .. rubric:: Footnotes
 
