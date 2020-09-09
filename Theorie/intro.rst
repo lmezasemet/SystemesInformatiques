@@ -1,15 +1,11 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012, 2019 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Christoph Paasch et Grégory Detal
+.. Copyright |copy| 2012, 2020 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Etienne Rivière, Christoph Paasch et Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 .. _introduction:
    
 Introduction
 ============
-
-TODO introduction plus étoffé et outline de la section à revoir
-
-Les systèmes informatiques jouent un rôle de plus en plus important dans notre société. Depuis les premiers calculateurs à la fin de la seconde guerre mondiale, les ordinateurs se sont rapidement améliorés et démocratisés. Aujourd'hui, notre société est de plus en plus dépendante des systèmes informatiques.
 
 .. spelling::
 
@@ -18,44 +14,70 @@ Les systèmes informatiques jouent un rôle de plus en plus important dans notre
    digit
    word
 
-Composition d'un système informatique
--------------------------------------
+Les systèmes informatiques sont partout dans notre quotidien : de notre téléphone portable à notre montre connectée, de notre ordinateur de bureau  aux très nombreux *serveurs* supportant les services internet que nous utilisons quotidiennement. De nombreux objets du quotidien sont eux-aussi des systèmes informatiques : on assiste ainsi à une explosion du nombre d'objets connectés (par exemple, des ampoules programmables ou des hauts-parleurs interactifs) et nombreux sont les objets qui intègrent désormais un ordinateur, comme les voitures ou les appareils électroménagers.
 
-Le système informatique le plus simple est composé d'un :term:`processeur` (:term:`CPU` en anglais) ou unité de calcul et d'une mémoire. Le processeur est un circuit électronique qui est capable d'effectuer de nombreuses tâches :
+Malgré la diversité de leurs usages, tous ces appareils ont en commun des principes fondamentaux de fonctionnement de d'organisation. Un système informatique intègre toujours au moins un :term:`processeur` (:term:`CPU` en anglais), une mémoire, et un ou des dispositifs d'entrée/sortie lui permettant d'interagir avec son environnement.
 
- - lire de l'information en mémoire
- - écrire de l'information en mémoire
- - réaliser des calculs
+Le :term:`CPU` est un circuit électronique réalisant très rapidement des opérations simples :
 
-L'architecture des ordinateurs est basée sur l'architecture dite de Von Neumann. Suivant cette architecture, un ordinateur est composé d'un processeur qui exécute un programme se trouvant en mémoire. La mémoire contient à la fois le programme à exécuter et les données qui sont manipulées par le programme.
+ - lire de l'information en mémoire;
+ - écrire de l'information en mémoire;
+ - effectuer des calculs.
 
-L'élément de base pour stocker et représenter de l'information dans un système informatique est le :term:`bit`. Un bit (`binary digit` en anglais) peut prendre deux valeurs qui par convention sont représentées par :
+Les opérations effectuées par le :term:`processeur` sont mises en œuvre directement de manière électronique. On parle d'*instructions*. Le jeu d'instruction d'un :term:`processeur` dépend de son modèle. Par exemple, les ordinateurs Apple et les PCs récents utilisent des processeurs Intel ou AMD permettant d'exécuter le jeu d'instruction ``x86_64``. Dans un futur proche, les ordinateurs Apple utiliseront un CPU mettant en œuvre le jeu d'instruction ``ARM A64``, le même que celui supporté par le processeur du nano-ordinateur RaspberryPI.
+
+La très grande majorité des processeurs adoptent les principes de l'architecture dite de Von Neumann, du nom du pionnier de l'informatique Jon von Neumann qui l'a proposé. Suivant cette architecture, un ordinateur est composé d'un :term:`processeur` qui exécute un programme lu depuis la mémoire. Cette même mémoire est aussi utilisée pour lire les données d'entrée et stocker les résultats des calculs et opérations effectuées par le processeur.
+
+Représentation de l'information
+-------------------------------
+
+Un processeur manipule l'information sous forme binaire. L'élément de base pour stocker et représenter de l'information dans un système informatique est donc le :term:`bit`. Un bit (`binary digit` en anglais) peut prendre deux valeurs qui par convention sont représentées par :
 
  - ``1``
  - ``0``
 
-Physiquement, un bit est représenté sous la forme d'un signal électrique ou optique lorsqu'il est transmis et d'une charge électrique ou sous forme magnétique lorsqu'il est stocké. Nous n'aborderons pas ces détails technologiques dans le cadre de ce cours. Ils font l'objet de nombreux cours d'électronique.
+Physiquement, un bit est représenté sous la forme d'un signal électrique ou optique lorsqu'il est transmis et d'une charge électrique ou sous forme physique (par exemple, magnétique) lorsqu'il est stocké. Nous n'aborderons pas ces détails technologiques dans le cadre de ce cours. Ils font l'objet de nombreux cours d'électronique.
 
-Le bit est l'unité de base de stockage et de transfert de l'information. En général, les systèmes informatiques ne traitent pas des bits individuellement [#fbitreseau]_.
+Le bit est l'unité de base de stockage et de transfert de l'information. En général, les systèmes informatiques ne traitent pas des bits individuellement, mais par blocs. On appelle un un :term:`nibble` est un bloc de 4 bits consécutifs tandis qu'un :term:`octet` (ou :term:`byte` en anglais) est un bloc de 8 bits consécutifs. On parlera de mots (`word` en anglais) pour des groupes comprenant généralement 32 bits et de long mot pour des groupes de 64 bits.
 
-La composition de plusieurs bits donne lieu à des blocs de données qui
-peuvent être utiles dans différentes applications
-informatiques. Ainsi, un :term:`nibble` est un bloc de 4 bits
-consécutifs tandis qu'un :term:`octet` (ou :term:`byte` en anglais)
-est un bloc de 8 bits consécutifs. On parlera de mots (`word` en
-anglais) pour des groupes comprenant généralement 32 bits et de long
-mot pour des groupes de 64 bits.
+Suivant l'architecture de Von Neumann, les données tout comme les instructions à exécuter par le processeur sont stockées sous forme binaire dans la mémoire. Le processeur va donc lire la prochaine instruction à exécuter sous forme d'un groupe de bits, la déchiffrer, et appliquer l'effet prévu pour l'instruction correspondante, avant de recommencer. L'identité de l'instruction à exécuter est déterminée en décodant les premiers bits de l'instruction; le reste contenant les arguments de l'instruction.
+
+Certaines instructions ont pour objectif de déterminer la prochaine instruction à lire, décoder et exécuter. Ces instructions de contrôle de flux permettent de mettre en œuvre les conditionnelles, boucles, etc.
+
+Interaction avec le monde extérieur
+-----------------------------------
 
 Le processeur et la mémoire ne sont pas les deux seuls composants d'un système informatique. Celui-ci doit également pouvoir interagir avec le monde extérieur, ne fut-ce que pour pouvoir charger le programme à exécuter et les données à analyser. Cette interaction se réalise grâce à un grand nombre de dispositifs d'entrées/sorties et de stockage. Parmi ceux-ci, on peut citer :
 
- - le clavier qui permet à l'utilisateur d'entrer des caractères
- - l'écran qui permet à l'utilisateur de visualiser le fonctionnement des programmes et les résultats qu'ils produisent
- - l'imprimante qui permet à l'ordinateur d'écrire sur papier les résultats de l'exécution de programmes
- - le disque-dur, les clés USB, les CDs et DVDs qui permettent de stocker les données sous la forme de fichiers et de répertoires
- - la souris ou la tablette graphique qui permettent à l'utilisateur de fournir à l'ordinateur des indications de positionnement
- - le scanner qui permet à l'ordinateur de transformer un document en une image numérique
- - le haut-parleur avec lequel l'ordinateur peut diffuser différentes sortes de son
- - le microphone et la caméra qui permettent à l'ordinateur de capturer des informations sonores et visuelles pour les stocker ou les traiter
+ - le clavier qui permet à l'utilisateur d'entrer des caractères;
+ - l'écran qui permet à l'utilisateur de visualiser le fonctionnement des programmes et les résultats qu'ils produisent;
+ - l'imprimante qui permet à l'ordinateur d'écrire sur papier les résultats de l'exécution de programmes;
+ - le disque-dur, les clés USB, les CDs et DVDs qui permettent de stocker les données sous la forme de fichiers et de répertoires;
+ - la souris ou la tablette graphique qui permettent à l'utilisateur de fournir à l'ordinateur des indications de positionnement;
+ - le scanner qui permet à l'ordinateur de transformer un document en une image numérique;
+ - le haut-parleur avec lequel l'ordinateur peut diffuser différentes sortes de son;
+ - le microphone et la caméra qui permettent à l'ordinateur de capturer des informations sonores et visuelles pour les stocker ou les traiter.
+
+TODO expliquer les device controller (in charge of a particular device, with their own buffer memory)
+
+TODO expliquer que les I/O et l'exécution des instructions se font en parallèle; when data is available (e.g. keystroke) CPU needs to copy data to/from 
+
+TODO expliquer le principe des interruptions + expliquer le principe des trap (?)
+
+TODO mentionner le principe de DMA en donnant une ref wiki ?
+
+Rôle du système d'exploitation
+------------------------------
+
+TODO expliquer qu'une utilisation directe (un seul programme, incluant les routines permettant de traiter les interruptions et les entrées/sorties) est très compliqué, donner un peu d'historique (premiers OS dès le milieu des années 60).
+
+TODO 
+
+
+
+
+
+ 
 
 Les systèmes informatiques peuvent prendre différentes formes, allant de minuscules systèmes embarqués à de gigantesques supercalculateurs.
 Les :term:`raspberry pi` sont un exemple d'un système embarqué. Il s'agit de nano-ordinateurs, de la taille d'une carte de crédit.
