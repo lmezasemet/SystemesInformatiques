@@ -71,19 +71,8 @@ Rôle du système d'exploitation
 
 TODO expliquer qu'une utilisation directe (un seul programme, incluant les routines permettant de traiter les interruptions et les entrées/sorties) est très compliqué, donner un peu d'historique (premiers OS dès le milieu des années 60).
 
-TODO 
+TODO indiquer le premier role de virtualisation (simplifier l'utilisation de technologies diverses ...) en reprenant la terminologie du bouquin Arpaci-Dusseau.
 
-
-
-
-
- 
-
-Les systèmes informatiques peuvent prendre différentes formes, allant de minuscules systèmes embarqués à de gigantesques supercalculateurs.
-Les :term:`raspberry pi` sont un exemple d'un système embarqué. Il s'agit de nano-ordinateurs, de la taille d'une carte de crédit.
-Possédant les mêmes composants que décrits ci-dessus, ils fonctionnent de la même façon que des systèmes plus imposants comme les ordinateurs personnels que l'on utilise au quotidien, seulement avec moins de ressources.
-
-TODO mentionner plus d'exemples de systèmes (systèmes embarqués, clouds, etc.)
 
 .. spelling::
 
@@ -100,12 +89,6 @@ TODO mentionner plus d'exemples de systèmes (systèmes embarqués, clouds, etc.
    pi
    nano
 
-Système d'exploitation
-----------------------
-
-TODO Expliquer le rôle en général d'un OS et les fonctions fondamentales (isolation, virtualisation/partage de ressources, sécurité) en suivant la terminologie du bouquin des Arpaci-Dusseau
-
-TODO mentionner des exemples de systèmes génériques et spécialisés.
    
 Unix
 ----
