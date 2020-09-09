@@ -72,6 +72,15 @@ Systèmes Multiprocesseurs
    Threads/threads2
    Threads/coordination
    Threads/processus
+   Threads/spinlocks
+
+Mémoire virtuelle
+*****************
+
+.. toctree::
+   :maxdepth: 2
+
+   MemoireVirtuelle/vmem
 
 Fichiers
 ********
@@ -82,13 +91,13 @@ Fichiers
    Fichiers/fichiers
    Fichiers/fichiers-signaux
 
-Mémoire virtuelle
-*****************
+Ordonnancement (scheduling)
+***************************
 
 .. toctree::
    :maxdepth: 2
 
-   MemoireVirtuelle/vmem
+   Ordonnancement/scheduling
 
 *******
 Annexes
