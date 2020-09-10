@@ -225,6 +225,12 @@ Glossaire
    table des processus
     Table contenant les identifiants (:term:`pid`) de tous les processus qui s'exécutent à ce moment sur un système Unix. Outre les identifiants, cette table contient de nombreuses informations relatives à chaque :term:`processus`. Voir également :term:`/proc`
 
+   table des pages
+    Table contenant l'association entre les pages d'un espace de mémoire virtuelle et les frames (ou pages physiques) de la mémoire physique auxquelles elles sont allouées. Le contenu de la table des pages est mis à jour par le système d'exploitation et utilisé par la MMU pour traduire automatiquement les adresses virtuelles en adresses physiques.
+
+   MMU
+    Unité de gestion de la mémoire, ou Memory Management Unit. Ce composant associé au processeur permet de gérer l'accès à la mémoire, particulièrement la traduction entre adresses virtuelles et adresses physiques et le contrôle d'accès.
+
    /proc
     Sous Linux, représentation de l'information stockée dans la :term:`table des processus` sous la forme d'une arborescence directement accessible via les commandes du :term:`shell`. Voir `proc(5)`_
 
@@ -235,7 +241,7 @@ Glossaire
     Un des inventaires des premiers ordinateurs. A défini l'architecture de base des premiers ordinateurs qui est maintenant connue comme le modèle de von Neumann [Krakowiak2011]_
 
    mémoire
-    Dispositif électronique permettant de stocker
+    Dispositif électronique permettant de stocker de l'information
 
    SRAM
    static RAM
@@ -249,6 +255,9 @@ Glossaire
    Random Access Memory
     Mémoire à accès aléatoire. Mémoire permettant au processeur d'accéder à n'importe quelle donnée en connaissant son adresse. Voir :term:`DRAM` et :term:`SRAM`.
 
+   DMA
+   Direct Memory Access
+    Mécanisme permettant à un contrôleur de périphérique d'entrée/sortie d'écrire ou de lire directement depuis la mémoire principale en ne générant une :term:`interruption` que lorsque le transfert est terminé.
 
    registre
     Unité de mémoire intégrée au processeur. Les registres sont utilisés comme source ou destination pour la plupart des opérations effectuées par un processeur.
@@ -301,7 +310,6 @@ Glossaire
    multi-threadé    
    multi-coeurs
     Processeur contenant plusieurs unités permettant d'exécuter simultanément des instructions de programmes différents.
-
 
    multithreadé
     Programme utilisant plusieurs threads.
@@ -422,7 +430,9 @@ Glossaire
 
    principe de localité
     principe de fonctionnement de la mémoire indiquant que lorsqu'un programme accède à une adresse à un temps t, il accédera encore à des adresses proches dans les prochains instants
-    
+
+   politique d'ordonnancement
+    scheduling en anglais. Politique décidant dans quel ordre et sur quel processeur les processus disponibles à l'exécution doivent se voir allouer le ou les processeur(s) disponibles
     
 .. spelling::
 
