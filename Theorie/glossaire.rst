@@ -433,6 +433,9 @@ Glossaire
 
    politique d'ordonnancement
     scheduling en anglais. Politique décidant dans quel ordre et sur quel processeur les processus disponibles à l'exécution doivent se voir allouer le ou les processeur(s) disponibles
+
+   trap
+    interruption logicielle permettant à un processus en mode utilisateur de donner la main au noyau en mode protégé, soit dans le cas d'un appel système soit lors de l'utilisation d'une instruction interdite
     
 .. spelling::
 
@@ -524,6 +527,7 @@ Glossaire
    big
    benchmark
    threadé
+   trap
 
 
    
