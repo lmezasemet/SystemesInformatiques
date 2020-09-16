@@ -53,8 +53,8 @@ source_encoding = 'utf-8'
 master_doc = 'index'
 
 # General information about the project.
-project = u'LEPL1503'
-copyright = u'2020, Olivier Bonaventure, Axel Legay'
+project = u'LEPL1503 et LINFO1252'
+copyright = u'2020, Olivier Bonaventure, Axel Legay, Etienne Riviere'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
