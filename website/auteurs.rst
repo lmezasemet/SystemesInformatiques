@@ -1,18 +1,17 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012-2014 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Christoph Paasch et Grégory Detal
+.. Copyright |copy| 2012-2014 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Etienne Rivière, Christoph Paasch et Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 
 Systèmes informatiques 
 ======================
 
-
- 
 .. only:: html
 
 Ces notes et les exercices associés ont été écrits par :
 
  - `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_
+ - `Etienne Rivière <https://cloudlargescale-uclouvain.github.io/Etienne_Riviere>`_
  - `Grégory Detal`
  - `Christoph Paasch`
 
