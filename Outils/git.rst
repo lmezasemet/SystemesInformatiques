@@ -56,7 +56,7 @@ Introduction
 
 `git(1)`_ a été développé initialement pour la gestion du code source du kernel Linux.
 Il est aussi utilisé pour la gestion des sources de ce document
-depuis https://github.com/obonaventure/SystemesInformatiques.
+depuis https://github.com/UCL-INGI/SyllabusC_Systeme.
 On l'utilise le plus souvent à l'aide de l'utilitaire `git(1)`_ mais il
 existe aussi des
 `applications graphiques <http://git-scm.com/downloads/guis>`_.
@@ -704,7 +704,7 @@ et la votre *origin*.
 
 Commencez donc par vous connecter sur GitHub, allez à
 l'`adresse du code du syllabus
-<https://github.com/obonaventure/SystemesInformatiques/>`_ et cliquez
+<https://github.com/UCL-INGI/SyllabusC_Systeme/>`_ et cliquez
 sur *Fork*.
 
 Vous pouvez maintenant obtenir le code du syllabus avec la commande
@@ -713,7 +713,7 @@ Vous pouvez maintenant obtenir le code du syllabus avec la commande
 
 .. code-block:: bash
 
-   $ git clone https://github.com/username/SystemesInformatiques.git
+   $ git clone https://github.com/UCL-INGI/SyllabusC_Systeme.git
 
 Vous pouvez alors faire les changements que vous désirez puis les committer
 comme expliqué à la section précédente.
@@ -722,7 +722,7 @@ Pour cela, il faut commencer par ajouter la remote
 
 .. code-block:: bash
 
-   $ git remote add upstream https://github.com/obonaventure/SystemesInformatiques.git
+   $ git remote add upstream https://github.com/UCL-INGI/SyllabusC_Systeme.git
 
 À chaque fois que vous voudrez vous mettre à jour, utilisez `git-pull(1)`_
 
@@ -738,7 +738,7 @@ Une fois vos changements committés, vous pouvez les ajouter à *origin* avec
    $ git push origin master
 
 Votre amélioration devrait normalement être visible via
-`https://github.com/obonaventure/SystemesInformatiques/network <https://github.com/obonaventure/SystemesInformatiques/network>`_.
+`https://github.com/UCL-INGI/SyllabusC_Systeme/network <https://github.com/UCL-INGI/SyllabusC_Systeme/network>`_.
 Vous pouvez maintenant aller sur GitHub à la page de votre fork et
 cliquer sur *Pull Requests* puis *New pull request* et expliquer
 vos changements.

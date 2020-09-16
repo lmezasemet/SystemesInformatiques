@@ -118,9 +118,9 @@ html_theme = 'alabaster'
 html_theme_options = {
     'logo_name': False,
     'logo_text_align': 'left',
-    'description': "Syllabus d'apprentissage du C pour le projet LEPL1503",
+    'description': "Syllabus commun aux deux cours",
     'github_user': 'UCL-INGI',
-    'github_repo': 'SyllabusC',
+    'github_repo': 'SyllabusC_Systeme',
     'travis_button': False,
 }
 html_sidebars = {

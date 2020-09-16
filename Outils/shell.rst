@@ -7,6 +7,10 @@
 Shell
 =====
 
+.. note:: Compléments à la partie théorique
+
+  Ces notes sur la ligne de commande ont été écrites par deux étudiants EPL il y a quelques années. Nous les conservons en complément de la partie théorique du cours sur la ligne de commande, pour celles et ceux qui souhaiteraient aller plus loin.
+
 L'interpréteur de commande, ou shell, est l'interface de communication entre l'utilisateur et le système d'exploitation. C'est un exécutable chargé d'interpréter les commandes écrites par l'utilisateur et de les exécuter.
 
 Dans le cadre de ce cours nous utiliserons l'interpréteur `bash(1)`_. Cet exécutable est généralement placé dans le fichier ``/bin/bash``.

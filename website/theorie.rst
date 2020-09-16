@@ -7,7 +7,9 @@
 Lanage C : Théorie
 ==================
 
-La `version HTML <http://sites.uclouvain.be/SystInfo/notes/Theorie/>`_ est la préférable car elle contient des liens hypertextes vers les pages de manuel Linux qui font partie de la matière. D'autres formats sont possibles pour ceux qui veulent lire le document hors ligne :
+La `version HTML <http://sites.uclouvain.be/SystInfo/notes/Theorie/html/>`_ est la préférable car elle contient des liens hypertextes vers les pages de manuel Linux qui font partie de la matière. 
 
-        - `format epub <http://sites.uclouvain.be/SystInfo/distrib/LEPL1503IntroductionaulangageC.epub>`_ lisible sur tablettes style iPad ou Galaxy Tab
-..        - `format pdf <http://sites.uclouvain.be/SystInfo/distrib/SINF1252-Theorie.pdf>`_ pour lecture via les logiciels Adobe ou pour impression
+.. D'autres formats sont possibles pour ceux qui veulent lire le document hors ligne :
+..
+..         - `format epub <http://sites.uclouvain.be/SystInfo/distrib/LEPL1503IntroductionaulangageC.epub>`_ lisible sur tablettes style iPad ou Galaxy Tab
+.. ..        - `format pdf <http://sites.uclouvain.be/SystInfo/distrib/SINF1252-Theorie.pdf>`_ pour lecture via les logiciels Adobe ou pour impression

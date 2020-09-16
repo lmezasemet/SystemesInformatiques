@@ -5,7 +5,7 @@
 Introduction
 ============
 
-Outre des compétences théoriques qui sont abordées dans d'autres parties de ce document, la maîtrise d'une système informatique implique également une excellente connaissance des outils informatiques qui sont inclus dans ce système. Cette connaissance se construit bien entendu en utilisant activement ces logiciels. Cette section comprend les informations de bases sur quelques logiciels importants qui sont utilisés dans le cadre du cours. Elle est volontairement réduite car de nombreux logiciels pourraient faire l'objet de livres complets. Les étudiants sont invités à proposer des améliorations à cette section sous la forme de pull-requests via https://github.com/UCL-INFI/SyllabusC
+Outre des compétences théoriques qui sont abordées dans d'autres parties de ce document, la maîtrise d'une système informatique implique également une excellente connaissance des outils informatiques qui sont inclus dans ce système. Cette connaissance se construit bien entendu en utilisant activement ces logiciels. Cette section comprend les informations de bases sur quelques logiciels importants qui sont utilisés dans le cadre du cours. Elle est volontairement réduite car de nombreux logiciels pourraient faire l'objet de livres complets. Les étudiants sont invités à proposer des améliorations à cette section sous la forme de pull-requests via https://github.com/UCL-INGI/SyllabusC_Systeme.
 
 .. spelling::
 
@@ -26,7 +26,6 @@ De nombreux éditeurs sont utilisables pour manipuler efficacement du code sourc
  - `emacs <http://www.gnu.org/software/emacs/>`_ est un autre éditeur fréquemment utilisé sous Unix. Il existe de très nombreuses extensions à emacs qui lui permettent de faire tout ou presque, y compris de jouer à des jeux comme Tetris. Son extensibilité peut rebuter certains utilisateurs. De nombreux tutoriels sont disponibles sur Internet, dont http://www.gnu.org/software/emacs/tour/
  - `gedit <http://projects.gnome.org/gedit/>`_ est l'éditeur de base dans l'environnement graphique `GNOME <http://www.gnome.org>`_ utilisé dans les distributions Linux.
  - `eclipse <http://www.eclipse.org>`_ est un environnement complet de développement écrit en Java pour supporter initialement ce langage. De nombreuses extensions à `eclipse <http://www.eclipse.org>`_ existent, dont `CDT <http://www.eclipse.org/cdt/>`_ qui permet la manipulation efficace de code source en langages C et C++.
-
 
 .. _svn:
 

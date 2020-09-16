@@ -241,7 +241,7 @@ Détecter les deadlocks avec ``valgrind``
                 ==24314==    by 0x4E38604: pthread_create@@GLIBC_2.2.5 (createthread.c:256)
                 ==24314==    by 0x4C29B23: pthread_create_WRK (hg_intercepts.c:257)
                 ==24314==    by 0x4C29CA7: pthread_create@* (hg_intercepts.c:288)
-                ==24314==    by 0x400715: main (in /home/christoph/workspace/SINF1252/SINF1252/2012/S6/src/thread_crash)
+                ==24314==    by 0x400715: main (in /home/christoph/workspace/INFO1252/INFO1252/2012/S6/src/thread_crash)
                 ==24314==
                 ==24314== Thread #2: Exiting thread still holds 1 lock
                 ==24314==    at 0x4E37FB6: start_thread (pthread_create.c:430)

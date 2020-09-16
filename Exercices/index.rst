@@ -15,8 +15,7 @@ Syllabus C : Exercices
  
 .. only:: html
 
-    Ce site web contient la partie théorique du support du cours `Projet P3 - LEPL1503 <https://uclouvain.be/cours-2019-lepl1503>`_ donné aux `étudiants ingénieurs et informaticiens <http://www.uclouvain.be/info.html>`_ à l'`Université catholique de Louvain <https://www.uclouvain.be>`_ (UCL). Les étudiants sont invités à proposer leurs améliorations en soumettant des pull-requests via https://github.com/UCL-INGI/SyllabusC .
-
+   Ce site web contient les exercices utilisés dans les cours `Projet P3 - LEPL1503 <https://uclouvain.be/cours-2019-lepl1503>`_ et `Systèmes informatique - LINFO1252 <https://uclouvain.be/cours-2020-LINFO1252.html>`_, donnés aux `étudiants ingénieurs et informaticiens <http://www.uclouvain.be/info.html>`_ à l'`Université catholique de Louvain <https://www.uclouvain.be>`_ (UCLouvain). Les étudiants sont invités à proposer leurs améliorations en soumettant des pull-requests via https://github.com/UCL-INGI/SyllabusC_Systeme.
 
 *********
 Exercices

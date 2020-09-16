@@ -74,6 +74,7 @@ Vagrant.configure(2) do |config|
      sudo apt-get install -y texlive-fonts-recommended
      sudo apt-get install -y python-sphinxcontrib.spelling
      sudo apt-get install -y hunspell hunspell-fr
+     sudo apt-get install -y lftp
      sudo apt-get install -y python-pip
      sudo pip install -e git+https://github.com/bitprophet/alabaster/#egg=alabaster 
      echo 'export LC_ALL=en_US.UTF-8' >> /home/vagrant/.bashrc

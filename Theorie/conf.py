@@ -25,8 +25,8 @@ import sys, os
 extensions = ['sphinx.ext.todo', 'sphinx.ext.ifconfig', 'sphinx.ext.mathjax', 'sphinx.ext.intersphinx', 'sphinxcontrib.spelling' ]
 
 project = 'Syllabus C et Systèmes Informatiques'
-copyright = '2020, Olivier Bonaventure, Gregory Detal, Christoph Paasch, Etienne Riviere'
-author = 'Olivier Bonaventure, Gregory Detal, Christoph Paasch, Etienne Riviere'
+copyright = '2020, Olivier Bonaventure, Etienne Riviere, Gregory Detal, Christoph Paasch'
+author = 'Olivier Bonaventure, Etienne Riviere, Gregory Detal, Christoph Paasch'
 
 # The full version, including alpha/beta/rc tags
 release = '2020'
@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'LEPL1503 et LINFO1252'
-copyright = '2013, 2020, O. Bonaventure, G. Detal, C. Paasch, E. Riviere'
+copyright = '2013, 2020, O. Bonaventure, E. Riviere, G. Detal, C. Paasch'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -156,7 +156,7 @@ html_show_sourcelink = True
 #html_show_copyright = True
 
 # Intersphinx
-intersphinx_mapping = {'theorie': ('https://sites.uclouvain.be/SyllabusC_Systeme/notes/Theorie/', None), 'outils': ('https://sites.uclouvain.be/SyllabusC_Systeme/notes/Outils/', None), 'exercices': ('https://sites.uclouvain.be/SyllabusC_Systeme/notes/Exercices/', None)}
+intersphinx_mapping = {'theorie': ('https://sites.uclouvain.be/SystInfo/notes/Theorie/', None), 'outils': ('https://sites.uclouvain.be/SystInfo/notes/Outils/', None), 'exercices': ('https://sites.uclouvain.be/SystInfo/notes/Exercices/', None)}
 
 
 # -- Options for Spelling extension ------------------------------------------
@@ -185,7 +185,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'LEPL1503-LINFO1252.tex', 'Syllabus LEPL1503 et LINFO1252',
-   'O. Bonaventure, G. Detal, C. Paasch, E. Riviere', 'manual'),
+   'O. Bonaventure, E. Riviere, G. Detal, C. Paasch', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
