@@ -8,4 +8,4 @@ Systèmes informatiques : Exercices
 ==================================
 
 
-Pour des raisons pratiques, les exercices sont uniquement disponibles sous la forme de `pages HTML <http://sites.uclouvain.be/SyllabusC/notes/Exercices/index.html>`_
+Pour des raisons pratiques, les exercices sont uniquement disponibles sous la forme de `pages HTML <http://sites.uclouvain.be/SystInfo/notes/Exercices/index.html>`_
