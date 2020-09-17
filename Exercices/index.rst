@@ -3,9 +3,9 @@
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 
-######################
-Syllabus C : Exercices
-######################
+#########
+Exercices
+#########
 
 .. spelling::
 
@@ -24,6 +24,7 @@ Exercices
 .. toctree::
    :maxdepth: 2
 
+   LEPL1503
+   LINFO1252
    intro
    bib
-

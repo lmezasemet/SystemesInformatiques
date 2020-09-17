@@ -5,8 +5,8 @@
    
 .. _declarations:
  
-Sections à venir
-================
+Structure du système d'exploitation
+===================================
 
 Cette nouvelle section décrira les principales fonctions d'un système d'exploitation du point de vue de son concepteur ainsi que les mécanismes modernes permettant d'assurer les propriétés d'isolation et de performance.
 

@@ -5,7 +5,7 @@
    
 .. _declarations:
  
-Section à venir
-===============
+Mise en oeuvre des verrous
+==========================
 
 Cette nouvelle section décrira la mise en œuvre des verrous (mutex) au sein d'un système d'exploitation. Elle couvrira les algorithmes classiques fondés sur des registres en lecture/écriture ainsi que des solutions plus efficaces utilisant les opérations atomiques.

@@ -5,7 +5,7 @@
    
 .. _declarations:
  
-Section à venir
-===============
+Ordonnancement
+==============
 
 Cette nouvelle section décrira la mise en œuvre et l'évaluation de politiques d'ordonnancement de processus (scheduling).

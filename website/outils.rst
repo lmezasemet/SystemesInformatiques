@@ -3,12 +3,12 @@
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 
-###############################
-Systèmes informatiques : Outils
-###############################
+######
+Outils
+######
 
 
-La `version HTML <http://sites.uclouvain.be/SystInfo/notes/Outils/html/>`_ est la préférable car elle contient des liens hypertextes vers les pages de manuel Linux qui font partie de la matière.
+La `version HTML <http://sites.uclouvain.be/SystInfo/notes/Outils>`_ est la préférable car elle contient des liens hypertextes vers les pages de manuel Linux qui font partie de la matière.
 
 ..         - `format epub <http://sites.uclouvain.be/SystInfo/distrib/LEPL1503Outilsinformatiques.epub>`_ lisible sur tablettes style iPad ou Galaxy Tab
 .. ..         - `format pdf <http://sites.uclouvain.be/SystInfo/distrib/>`_ pour lecture via les logiciels Adobe ou pour impression
