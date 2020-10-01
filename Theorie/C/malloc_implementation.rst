@@ -341,7 +341,7 @@ Deux politiques sont possibles pour pallier cette difficulté :
 
 - Une deuxième politique est de simplement insérer le bloc vide au début de la liste des blocs vides (on parle alors de politique LIFO, pour *Last-In-First-Out*). Cette approche a l'avantage indéniable que l'opération de libération est en temps constant. Toutefois, la fusion de zones libres contigus devient plus complexes et nécessite d'opérer des changements dans au plus trois éléments de la liste chaînée et leurs voisins respectifs. Nous n'en couvrirons pas les détails dans le cadre de ce cours.
 
-En règle générale, la politique *address-ordered* entraîne une fragmentation interne moins importante que la politique LIFO.
+En règle générale, la politique *address-ordered* entraîne une fragmentation externe moins importante que la politique LIFO.
 Son principal désavantage réside donc dans son temps d'exécution, qui peut devenir important lorsque de nombreux blocs vides sont présents.
 
 Utilisation de listes multiples
