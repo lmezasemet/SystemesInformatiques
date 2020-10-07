@@ -1,5 +1,5 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Christoph Paasch et Grégory Detal
+.. Copyright |copy| 2012 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Etienne Rivière, Christoph Paasch et Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 .. _ordinateurs:
@@ -10,33 +10,35 @@ Organisation des ordinateurs
 
 Pour bien comprendre la façon dont les programmes s'exécutent sur un ordinateur, il est nécessaire de connaitre quelques principes de base sur l'architecture des ordinateurs et de leur organisation.
 
-Un des premiers principes fondateurs est le modèle d'architecture de :term:`von Neumann`. Ce modèle d'architecture a été introduit durant le développement des premiers ordinateurs pendant la seconde guerre mondiale mais reste tout à fait valide aujourd'hui [Krakowiak2011]_. La partie la plus intéressante de ce modèle concerne les fonctions de calcul d'un ordinateur. Il postule qu'un ordinateur est organisé autour de deux types de dispositifs :
+Comme nous l'avons déjà abordé dans l'introduction, un des premiers principes fondateurs est le modèle d'architecture de :term:`von Neumann`. Ce modèle d'architecture a été introduit durant le développement des premiers ordinateurs pendant la seconde guerre mondiale mais reste tout à fait valide aujourd'hui [Krakowiak2011]_. La partie la plus intéressante de ce modèle concerne les fonctions de calcul d'un ordinateur. Il postule qu'un ordinateur est organisé autour de deux types de dispositifs :
 
  - L'unité centrale ou :term:`processeur`. Cette unité centrale peut être décomposée en deux parties : l'unité de commande et l'unité arithmétique et logique. L'unité arithmétique et logique regroupe les circuits électroniques qui permettent d'effectuer les opérations arithmétiques (addition, soustraction, division, ...) et logiques. C'est cette unité qui réalise les calculs proprement dits. L'unité de commande permet quant à elle de charger, décoder et exécuter les instructions du programme qui sont stockées en mémoire.
  - La :term:`mémoire`. Celle-ci joue un double rôle. Elle stocke à la fois les données qui sont traitées par le programme mais aussi les instructions qui composent celui-ci. Cette utilisation de la mémoire pour stocker les données et une représentation binaire du programme à exécuter sont un des principes fondamentaux du fonctionnement des ordinateurs actuels.
 
 La figure ci-dessous illustre les principaux éléments du modèle de von Neumann.
 
-
 .. figure:: /Assembleur/fig/figures-memoire-001-c.png
    :align: center
 
    Modèle de von Neumann
 
+Dans cette section du cours, nous allons étudier plus en détails le fonctionnement d'un système informatique moderne et introduire des considérations de technologie et de performance.
+Ensuite, nous verrons comment un exemple de jeu d'instruction illustrant le fonctionnement au plus bas niveau du couple processeur et mémoire.
 
 Les technologies utilisées pour construire les processeurs et la mémoire ont fortement évolué depuis les premiers ordinateurs, mais les principes fondamentaux restent applicables. En première approximation, on peut considérer la mémoire comme étant un dispositif qui permet de stocker des données binaires. La mémoire est découpée en blocs d'un octet. Chacun de ces blocs est identifié par une adresse, qui est elle aussi représentée sous la forme d'un nombre binaire. Une mémoire qui permet de stocker :math:`2^k` bytes de données utilisera au minimum `k` bits pour représenter l'adresse d'une zone mémoire. Ainsi, une mémoire pouvant stocker 64 millions de bytes doit utiliser au moins 26 bits d'adresse. En pratique, les processeurs des ordinateurs de bureau utilisent 32 ou 64 bits pour représenter les adresses en mémoire. D'anciens processeurs utilisaient 16 ou 20 bits d'adresse. Le nombre de bits utilisés pour représenter une adresse en mémoire limite la capacité totale de mémoire adressable par un processeur. Ainsi, un processeur qui utilise des adresses sur 32 bits n'est pas capable physiquement d'adresser plus de 4 GBytes de mémoire.
 
-En pratique, l'organisation physique d'un ordinateur actuel est plus complexe que le modèle de von Neumann. Schématiquement, on peut considérer l'organisation présentée dans la figure ci-dessous. Le processeur est directement connecté à la mémoire via un :term:`bus` de communication rapide. Ce bus permet des échanges de données et d'instructions efficaces entre la mémoire et le processeur. Outre le processeur et la mémoire, un troisième dispositif, souvent baptisé
-adaptateur de bus est connecté au bus processeur-mémoire. Cet adaptateur permet au processeur d'accéder aux dispositifs de stockage ou aux dispositifs d'entrées-sorties tels que le clavier, la souris ou les cartes réseau. En pratique, cela se réalise en connectant les différents dispositifs à un autre bus de communication (PCI, SCSI, ...) et en utilisant un adaptateur de bus qui est capable de traduire les commandes venant du processeur.
+En pratique, l'organisation physique d'un ordinateur actuel est plus complexe que le modèle de von Neumann. Schématiquement, on peut considérer l'organisation présentée dans la figure ci-dessous. Le processeur est directement connecté à la mémoire via un :term:`bus` de communication rapide. Ce bus permet des échanges de données et d'instructions efficaces entre la mémoire et le processeur. (Le bus est aussi utilisé pour gérer les échanges dans les systèmes équipés de plusieurs processeurs.) Outre le processeur et la mémoire, un troisième dispositif, souvent baptisé adaptateur de bus est connecté au bus processeur-mémoire. Cet adaptateur permet au processeur d'accéder aux gestionnaire de périphériques pour interagir avec les dispositifs de stockage et avec les dispositifs d'entrées-sorties tels que le clavier, la souris ou les cartes réseau. En pratique, cela se réalise en connectant les différents dispositifs à un autre bus de communication (PCI, SCSI, ...) et en utilisant un adaptateur de bus qui est capable de traduire les commandes venant du processeur.
 
 .. figure:: /Assembleur/fig/figures-memoire-002-c.png
    :align: center
 
    Architecture d'un ordinateur actuel
 
-Différentes technologies ont été mises en oeuvre pour construire les mémoires utilisées dans les ordinateurs. Aujourd'hui, les technologies les plus courantes sont les mémoires de type :term:`SRAM` et les mémoires de type :term:`DRAM`. Dans une :term:`SRAM`, l'information est stockée sous la forme d'un courant électrique qui passe ou ne passe pas à un endroit donné. L'avantage de cette technologie est que le temps d'accès à une donnée stockée en :term:`SRAM` est assez faible. Malheureusement, leur inconvénient majeur est leur grande consommation électrique qui empêche de développer des mémoires de grande capacité. Aujourd'hui, les :term:`SRAM` les plus grandes ont une capacité de seulement 12 MBytes [HennessyPatterson]_.
+Différentes technologies ont été mises en oeuvre pour construire les mémoires utilisées dans les ordinateurs. Aujourd'hui, les technologies les plus courantes sont les mémoires de type :term:`SRAM` et les mémoires de type :term:`DRAM`. Dans une :term:`SRAM`, chaque bit d'information est stocké par un circuit composé de 4 à 6 transistors, et de quelques autres composants électroniques (résistances), mettant en oeuvre le principe de *bascule*. Une ligne d'information permet d'évaluer la valeur du bit stocké en observant le passage (ou non) d'un courant électrique dans ce circuit bascule, qui n'est possible que si le bit stocké est 1. Une ligne de commande permet par ailleurs de mettre la valeur stockée à 0 ou 1. Avec une :term:`SRAM`, les données restent stockées de manière statique tant que le circuit de mémoire est sous tension (d'où leur nom de *static memory*--SRAM, par opposition à la mémoire dynamique). Malheureusement, les deux inconvénients majeurs de la :term:`SRAM` est sa grande consommation électrique et le nombre important de composants électronique par bit stocké, qui empêche de développer des mémoires de grande capacité à un prix raisonnable. Aujourd'hui, les :term:`SRAM` les plus grandes ont une capacité de seulement quelques douzaines de MBytes [HennessyPatterson]_.
 
-Les :term:`DRAM` sont totalement différentes des :term:`SRAM` d'un point de vue électronique. Dans une mémoire de type :term:`DRAM`, c'est la présence ou l'absence d'une charge (de quelques électrons à quelques dizaines d'électrons) dans un condensateur qui représente la valeur ``0`` ou ``1``. Il est possible de construire des :term:`DRAM` de très grande taille, jusqu'à 1 GByte par chip [HennessyPatterson]_. C'est la raison pour laquelle on retrouve très largement des mémoires de type :term:`DRAM` dans les ordinateurs. Malheureusement, leurs performances sont nettement moins bonnes que les mémoires de type :term:`SRAM`. En pratique, une mémoire :term:`DRAM` actuelle peut être vue comme étant équivalente à une grille [Drepper2007]_. Les adresses peuvent être vues comme étant composées d'un numéro de colonne et d'un numéro de ligne. Pour lire ou écrire une donnée en mémoire :term:`DRAM`, le processeur doit d'abord indiquer la ligne qu'il souhaite lire et ensuite la colonne. Ces deux opérations sont successives. Lorsque la mémoire a reçu la ligne et la colonne demandées, elle peut commencer le transfert de la donnée. En pratique, les mémoires :term:`DRAM` sont optimisées pour fournir un débit de transfert élevé, mais elles ont une latence élevée. Cela implique que dans une mémoire :term:`DRAM`, il est plus rapide de lire ou d'écrire un bloc de 128 bits successifs que quatre blocs de 32 bits à des endroits différents en mémoire. A titre d'exemple, le tableau ci-dessous, extrait de [HP]_ fournit le taux de transfert maximum de différentes technologies de :term:`DRAM`.
+Les :term:`DRAM` sont totalement différentes des :term:`SRAM` d'un point de vue de leur conception électronique. Dans une mémoire de type :term:`DRAM`, c'est la présence ou l'absence d'une charge (de quelques électrons à quelques dizaines d'électrons) dans un condensateur qui représente la valeur ``0`` ou ``1``. Comme la charge du condensateur est perdue au cours du temps à cause des courants de fuite, il est nécessaire de la remettre au maximum périodiquement. C'est la raison pour laquelle on parle de mémoire *dynamique* : il est nécessaire de parcourir, avec un certaine fréquence, l'ensemble des bits pour recharger les condensateurs représentant des ``1``. Comme pour la mémoire :term:`SRAM` les données sont perdues lorsque l'alimentation en électricité est coupée. 
+
+Il est possible de construire des :term:`DRAM` de très grande taille, jusqu'à 8 voire même 32 GByte par chip [HennessyPatterson]_. C'est la raison pour laquelle on retrouve très largement des mémoires de type :term:`DRAM` dans les ordinateurs. Malheureusement, leurs performances sont nettement moins bonnes que celles des mémoires de type :term:`SRAM`. En pratique, une mémoire :term:`DRAM` actuelle peut être vue comme étant équivalente à une grille [Drepper2007]_. Les adresses peuvent être vues comme étant composées d'un numéro de colonne et d'un numéro de ligne. Pour lire ou écrire une donnée en mémoire :term:`DRAM`, le processeur doit d'abord indiquer la ligne qu'il souhaite lire et ensuite la colonne. Ces deux opérations sont successives. Lorsque la mémoire a reçu la ligne et la colonne demandées, elle peut commencer le transfert de la donnée. En pratique, les mémoires :term:`DRAM` sont optimisées pour fournir un débit de transfert élevé, mais elles ont une latence élevée. Cela implique que dans une mémoire :term:`DRAM`, il est plus rapide de lire ou d'écrire un bloc de 128 bits successifs que quatre blocs de 32 bits à des endroits différents en mémoire. A titre d'exemple, le tableau ci-dessous, extrait de [HP]_ fournit le taux de transfert maximum de différentes technologies de :term:`DRAM`.
 
  ============    ================  ================
  Technologie     Fréquence [MHz]   Débit [MB/sec]
@@ -46,13 +48,11 @@ Les :term:`DRAM` sont totalement différentes des :term:`SRAM` d'un point de vue
  DDR-1		 266		   2656
  DDR-2		 333		   5328
  DDR-2		 400		   6400
- DDR-3		 400		   6400
- DDR-3		 533		   8500
- DDR-3		 667		   10600
+ DDR-3		 400-667	   6400-10600
+ DDR-4		 800-1600		   12800-25600
  ============    ================  ================
 
-
-Le processeur interagit en permanence avec la mémoire, que ce soit pour charger des données à traiter ou pour charger les instructions à exécuter. Tant les données que les instructions sont représentées sous la forme de nombres en notation binaire. Certains processeurs utilisent des instructions de taille fixe. Par exemple, chaque instruction est encodée sous la forme d'un mot de 32 bits. D'autres processeurs, comme ceux qui implémentent l'architecture [IA32]_, utilisent des instructions qui sont encodées sous la forme d'un nombre variable de bytes. Ces choix d'encodage des instructions influencent la façon dont les processeurs sont implémentés d'un point de vue microélectronique, mais ont assez peu d'impact sur le développeur de programmes. L'élément qu'il est important de bien comprendre est que le processeur doit en permanence charger des données et des instructions depuis la mémoire lors de l'exécution d'un programme.
+Le processeur interagit en permanence avec la mémoire, que ce soit pour charger des données à traiter ou pour charger les instructions à exécuter. Tant les données que les instructions sont représentées sous la forme de nombres en notation binaire. Certains processeurs utilisent des instructions de taille fixe. Par exemple, chaque instruction peut être encodée sous la forme d'un mot de 32 bits (4 octets). D'autres processeurs, comme ceux qui implémentent l'architecture [IA32]_, utilisent des instructions qui sont encodées sous la forme d'un nombre variable d'octets. Ces choix d'encodage des instructions influencent la façon dont les processeurs sont implémentés d'un point de vue microélectronique, mais ont assez peu d'impact sur le développeur de programmes. L'élément qu'il est important de bien comprendre est que le processeur doit en permanence charger des données et des instructions depuis la mémoire lors de l'exécution d'un programme.
 
 Outre des unités de calcul, un processeur contient plusieurs registres. Un :term:`registre` est une zone de mémoire très rapide se trouvant sur le processeur. Sur les processeurs actuels, cette zone de mémoire permet de stocker un mot de 32 bits ou un long mot de 64 bits. Les premiers processeurs disposaient d'un registre unique baptisé l':term:`accumulateur`. Les processeurs actuels en contiennent généralement une ou quelques dizaines. Chaque registre est identifié par un nom ou un numéro et les instructions du processeur permettent d'accéder directement aux données se trouvant dans un registre particulier. Les registres sont les mémoires les plus rapides qui sont disponibles sur un ordinateur. Malheureusement, ils sont en nombre très limité et il est impossible de faire fonctionner un programme non trivial en utilisant uniquement des registres.
 
@@ -85,7 +85,7 @@ La deuxième solution est d'utiliser le principe de la :term:`mémoire cache`. U
 
 On utilise des mémoires caches dans de nombreux systèmes informatiques de façon à améliorer leurs performances. Ces mémoires caches utilisent en fait le :term:`principe de localité`. En pratique, deux types de localité doivent être considérés. Tout d'abord, il y a la :term:`localité temporelle`. Si un processeur a accédé à la mémoire à l'adresse `A` à l'instant `t`, il est fort probable qu'il accédera encore à cette adresse dans les instants qui suivent. La localité temporelle apparaît notamment lors de l'exécution de longues boucles qui exécutent à de nombreuses reprises les mêmes instructions. Le second type de localité est la :term:`localité spatiale`. Celle-ci implique que si un programme a accédé à l'adresse `A` à l'instant `t`, il est fort probable qu'il accédera aux adresses proches de `A` comme `A+4`, `A-4` dans les instants qui suivent. Cette localité apparaît par exemple lorsqu'un programme traite un vecteur stocké en mémoire.
 
-Les mémoires caches exploitent ces principes de localité en stockant de façon transparente les instructions et les données les plus récemment utilisées. D'un point de vue physique, on peut voir le processeur comme étant connecté à la (ou parfois les) mémoire cache qui est elle-même connectée à la mémoire :term:`RAM`. Les opérations de lecture en mémoire se déroulent généralement comme suit. Chaque fois que le processeur a besoin de lire une donnée se trouvant à une adresse, il fournit l'adresse demandée à la mémoire cache. Si la donnée correspondant à cette adresse est présente en mémoire cache, celle-ci répond directement au processeur. Sinon, la mémoire cache interroge la mémoire :term:`RAM`, se met à jour et ensuite fournit la donnée demandée au processeur. Ce mode de fonctionnement permet à la mémoire cache de se mettre à jour au fur et à mesure des demandes faites par le processeur afin de profiter de la localité temporelle. Pour profiter de la localité spatiale, la plupart des caches se mettent à jour en chargeant directement une :term:`ligne de cache` qui peut compter jusqu'à quelques dizaines d'adresses consécutives en mémoire. Ce chargement d'une ligne complète de cache permet également de profiter des mémoires :term:`DRAM` récentes qui sont souvent optimisées pour fournir des débits de transfert élevés pour de longs blocs consécutifs en mémoire.
+Les mémoires caches exploitent ces principes de localité en stockant de façon transparente les instructions et les données les plus récemment utilisées. D'un point de vue physique, on peut voir le processeur comme étant connecté à la (ou parfois les) mémoire cache qui est elle-même connectée à la mémoire :term:`RAM`. Les opérations de lecture en mémoire se déroulent généralement comme suit. Chaque fois que le processeur a besoin de lire une donnée se trouvant à une adresse, il fournit l'adresse demandée à la mémoire cache. Si la donnée correspondant à cette adresse est présente en mémoire cache, celle-ci répond directement au processeur. Sinon, la mémoire cache interroge la mémoire :term:`RAM`, se met à jour et ensuite fournit la donnée demandée au processeur. Ce mode de fonctionnement permet à la mémoire cache de se mettre à jour au fur et à mesure des demandes faites par le processeur afin de profiter de la localité temporelle. Pour profiter de la localité spatiale, la plupart des caches se mettent à jour en chargeant directement une :term:`ligne de cache` qui peut compter jusqu'à quelques dizaines d'adresses consécutives en mémoire (par exemple, 16 octets sur la plupart des processeurs modernes). Ce chargement d'une ligne complète de cache permet également de profiter des mémoires :term:`DRAM` récentes qui sont souvent optimisées pour fournir des débits de transfert élevés pour de longs blocs consécutifs en mémoire.
 La figure ci-dessous illustre graphiquement la hiérarchie de mémoires dans un ordinateur.
 
 .. figure:: /Assembleur/fig/figures-memoire-003-c.png
@@ -94,7 +94,7 @@ La figure ci-dessous illustre graphiquement la hiérarchie de mémoires dans un 
    La hiérarchie de mémoires
 
 
-Pour les opérations d'écriture, la situation est plus compliquée. Si le processeur écrit l'information `x` à l'adresse `A` en mémoire, il faudrait idéalement que cette valeur soit écrite simultanément en mémoire cache et en mémoire :term:`RAM` de façon à s'assurer que la mémoire :term:`RAM` contienne toujours des données à jour. La stratégie d'écriture la plus simple est baptisée :term:`write through`. Avec cette stratégie, toute demande d'écriture venant du processeur donne lieu à une écriture en mémoire cache et une écriture en mémoire :term:`RAM`. Cette stratégie garantit qu'à tout moment la mémoire cache et la mémoire :term:`RAM` contiennent la même information. Malheureusement, d'un point de vue des performances, cette technique rabaisse les performances de la mémoire cache à celles de la mémoire :term:`RAM`. Vu la différence de performance entre les deux types de mémoires, cette stratégie n'est plus acceptable aujourd'hui. L'alternative est d'utiliser la technique du :term:`write back`. Avec cette technique, toute écriture est faite en :term:`mémoire cache` directement. Cela permet d'obtenir de très bonnes performances pour les écritures. Une donnée modifiée n'est réécrite en mémoire :term:`RAM` que lorsqu'elle doit être retirée de la mémoire cache. Cette écriture est faite automatiquement par la mémoire cache. Pour la plupart des programmes, la gestion des opérations d'écriture est transparente. Il faut cependant être attentif à la technique d'écriture utilisée lorsque plusieurs dispositifs peuvent accéder directement à la mémoire :term:`RAM` sans passer par le processeur. C'est le cas par exemple pour certaines cartes réseaux ou certains contrôleurs de disque dur. Pour des raisons de performances, ces dispositifs peuvent copier des données directement de la mémoire :term:`RAM` vers le réseau ou un disque dur. Si une écriture de type :term:`write-back` est utilisée, le système d'exploitation doit veiller à ce que les données écrites par le processeur en cache aient bien été écrites également en mémoire :term:`RAM` avant d'autoriser la carte réseau ou le contrôleur de disque à effectuer un transfert.
+Pour les opérations d'écriture, la situation est plus compliquée. Si le processeur écrit l'information `x` à l'adresse `A` en mémoire, il faudrait idéalement que cette valeur soit écrite simultanément en mémoire cache et en mémoire :term:`RAM` de façon à s'assurer que la mémoire :term:`RAM` contienne toujours des données à jour. La stratégie d'écriture la plus simple est baptisée :term:`write through`. Avec cette stratégie, toute demande d'écriture venant du processeur donne lieu à une écriture en mémoire cache et une écriture en mémoire :term:`RAM`. Cette stratégie garantit qu'à tout moment la mémoire cache et la mémoire :term:`RAM` contiennent la même information. Malheureusement, d'un point de vue des performances, cette technique rabaisse les performances de la mémoire cache à celles de la mémoire :term:`RAM`. Vu la différence de performance entre les deux types de mémoires, cette stratégie n'est plus acceptable aujourd'hui. L'alternative est d'utiliser la technique du :term:`write back`. Avec cette technique, toute écriture est faite en :term:`mémoire cache` directement. Cela permet d'obtenir de très bonnes performances pour les écritures. Une donnée modifiée n'est réécrite en mémoire :term:`RAM` que lorsqu'elle doit être retirée de la mémoire cache. Cette écriture est faite automatiquement par la mémoire cache. Pour la plupart des programmes, la gestion des opérations d'écriture est transparente. Il faut cependant être attentif à la technique d'écriture utilisée lorsque plusieurs dispositifs peuvent accéder directement à la mémoire :term:`RAM` sans passer par le processeur. C'est le cas par exemple pour certaines cartes réseaux ou certains contrôleurs de disque dur. Pour des raisons de performances, ces dispositifs peuvent copier des données directement de la mémoire :term:`RAM` vers le réseau ou un disque dur, en utilisant le principe de *Direct Memory Access* (DMA) présenté dans l'introduction de ce cours. Si une écriture de type :term:`write-back` est utilisée, le système d'exploitation doit veiller à ce que les données écrites par le processeur en cache aient bien été écrites également en mémoire :term:`RAM` avant d'autoriser la carte réseau ou le contrôleur de disque à effectuer un transfert en utilisant DMA.
 
 .. C'est particulièrement important lorsque des dispositifs tels qu'une carte réseau ou un controleur de disque dur peuvent aller lire des données en mémoire. Ces dispositifs doivent trouver en mémoire :term:`RAM` la dernière donnée écrite par le processeur
 
@@ -144,7 +144,6 @@ Il existe une instruction de la famille ``mov`` qui correspond à chaque type de
 
 En pratique, il y a plusieurs façons de spécifier chaque argument d'une instruction ``mov``. Certains auteurs utilisent le terme :term:`mode d'adressage` pour représenter ces différents types d'arguments même si il ne s'agit pas toujours d'adresses. Le premier mode est le mode `registre`. La source et la destination d'une opération ``mov`` peuvent être un nom de registre. Ceux-ci sont en général préfixés avec le caractère ``%``. Ainsi, ``%eax`` correspond au registre ``EAX``. La première instruction ci-dessous déplace le mot de 32 bits stocké dans le registre ``%eax`` vers le registre ``%ebx``. La seconde instruction elle n'a aucun effet puisqu'elle déplace le contenu du registre ``%ecx`` vers ce même registre.
 
-
 .. code-block:: nasm
 
    movl %eax, %ebx   ; déplacement de %eax vers %ebx
@@ -177,14 +176,13 @@ Les instructions ci-dessous sont un exemple de déplacement de données entre la
    movl $1252, %ecx   ; initialisation de %ecx à 1252
    movl %ecx, 0x08    ; remplace 0xFF par le contenu de %ecx (1252) à l'adresse 0x08
 
-
 Le quatrième mode d'adressage est le mode `indirect`. Plutôt que de spécifier directement une adresse, avec le mode indirect, on spécifie un registre dont la valeur est une adresse en mémoire. Ce mode indirect est équivalent à l'utilisation des pointeurs en langage C. Il se reconnait à l'utilisation de parenthèses autour du nom du registre source ou destination. L'exemple ci-dessous illustre l'utilisation de l'adressage indirect en considérant la mémoire présentée plus haut.
 
 .. code-block:: nasm
 
    movl $0x08, %eax    ; place la valeur 0x08 dans %eax
    movl (%eax), %ecx   ; place la valeur se trouvant à l'adresse qui est
-                       ; dans %eax dans le registre %ecx %ecx=0xFF
+                       ; dans %eax dans le registre %ecx : %ecx=0xFF
    movl 0x10, %eax     ; place la valeur se trouvant à l'adresse 0x10 dans %eax
    movl %ecx, (%eax)   ; place le contenu de %ecx, c'est-à-dire 0xFF à l'adresse qui est contenue dans %eax (0x10)
 
@@ -202,6 +200,11 @@ Le cinquième mode d'adressage est le mode avec une `base` et un `déplacement`.
 
 L'architecture [IA32]_ supporte encore d'autres modes d'adressage. Ceux sont décrits dans [IA32]_ ou [BryantOHallaron2011]_. Une autre instruction permettant de déplacer de l'information est l'instruction ``leal`` (load effective address). Cette instruction est parfois utilisée par les compilateurs. Elle place dans le registre destination l'adresse de son argument source plutôt que sa valeur. Ainsi ``leal 4(%esp) %edx`` placera dans le registre ``%edx`` l'adresse de son argument source, c'est-à-dire l'adresse contenue dans ``%esp+4``.
 
+.. topic:: Pas de déplacement entre deux adresses
+
+ On pourrait vouloir écrire l'instruction ``movl 0x04, 0x02`` pour copier le contenu de la mémoire à l'adresse ``0x04`` à l'adresse ``0x02``, ou bien écrire ``movl (%eax), (%ebx)`` pour copier le contenu de la mémoire à l'adresse pointée par le contenu du registre EAX vers l'adresse pointée par le contenu du registre EBX.
+ Ces deux opérations ne sont pas permises dans le jeu d'instruction [IA32]_, et il est donc nécessaire de passer par un registre intermédiaire.
+ D'autres architectures peuvent supporter l'utilisation de deux adresses mémoires dans une instruction, ici il s'agit d'un choix des concepteurs du jeu d'instruction qui permet de limiter la complexité de mise en oeuvre des processeurs le supportant.
 
 Instructions arithmétiques et logiques
 --------------------------------------
@@ -295,7 +298,7 @@ Outre les opérations arithmétiques, un processeur doit être capable de réali
 
 Nous utiliserons principalement les drapeaux `ZF` et `SF` dans ce chapitre. Ces drapeaux peuvent être fixés par les instructions arithmétiques standard, mais aussi par des instructions dédiées comme ``cmp`` et ``test``. L'instruction ``cmp`` effectue l'équivalent d'une soustraction et met à jour les drapeaux `CF` et `SF` mais sans sauvegarder son résultat dans un registre. L'instruction ``test`` effectue elle une conjonction logique sans sauvegarder son résultat mais en mettant à jour les drapeaux.
 
-Ces instructions de comparaison peuvent être utilisées avec les instructions ``set`` qui permettent de fixer la valeur d'un registre en fonction des valeurs de certains drapeaux du registre ``eflags``. Chaque instruction ``set`` prend comme argument un registre. Pour des raisons historiques, ces instructions modifient uniquement les bits de poids faible du registre indiqué et non le registre complet. C'est un détail qui est lié à l'histoire de l'architecture [IA32]_.
+Ces instructions de comparaison peuvent être utilisées avec les instructions ``set`` qui permettent de fixer la valeur d'un registre en fonction des valeurs de certains drapeaux du registre ``eflags``. Chaque instruction ``set`` prend comme argument un registre. Pour des raisons historiques, ces instructions modifient uniquement les 8 bits de poids faible du registre indiqué et non le registre complet. C'est un détail qui est lié à l'histoire de l'architecture [IA32]_.
 
  - ``sete`` met le registre argument à la valeur du drapeau `ZF`. Permet d'implémenter une égalité.
  - ``sets`` met le registre argument à la valeur du drapeau `SF`
@@ -395,6 +398,8 @@ Avant d'analyser la traduction de ce programme en assembleur, il est utile de le
 
   if (j<g) { goto suivant; }
     r=4;
+  
+  suivant:
 
 Ce code C correspond assez bien au code assembleur produit par le compilateur.
 
@@ -474,7 +479,7 @@ La première boucle démarre par l'initialisation de la variable ``j`` à ``0``.
 	jge	.LBB4_4  ; jump si j>=10
 	movl	g, %eax  ; %eax=g
 	addl	h, %eax  ; %eax+=h
-	movl	%eax, g  ; %eax=g
+	movl	%eax, g  ; g=%eax
 	movl	j, %eax  ; %eax=j
 	addl	$1, %eax ; %eax++
 	movl	%eax, j  ; j=%eax
@@ -519,7 +524,7 @@ Tandis que ``popl %ecx`` est équivalent à :
    movl (%esp), %ecx ; sauve dans %ecx la donnée au sommet de la pile
    addl $4, %esp     ; déplace le sommet de la pile de 4 unites vers le haut
 
-Pour bien comprendre le fonctionnement de la pile, il est utile de considérer un exemple simple. Imaginons la mémoire ci-dessous et supposons qu'initialement le registre ``%esp`` contient la valeur ``0x0C`` et que les registres ``eax`` et ``%ebx`` contiennent les valeurs ``0x02``  et ``0xFF``.
+Pour bien comprendre le fonctionnement de la pile, il est utile de considérer un exemple simple. Imaginons la mémoire ci-dessous et supposons qu'initialement le registre ``%esp`` contient la valeur ``0x0C`` et que les registres ``%eax`` et ``%ebx`` contiennent les valeurs ``0x02``  et ``0xFF``.
 
  =========    ========
  Adresse      Valeur
