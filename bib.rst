@@ -25,6 +25,8 @@ Bibliographie
 
 .. [Card+1994] Card, R., Ts’o, T., Tweedie, S, `Design and implementation of the second extended filesystem`. Proceedings of the First Dutch International Symposium on Linux. ISBN 90-367-0385-9. http://web.mit.edu/tytso/www/linux/ext2intro.html
 
+.. [Chou2001] Chou, A., Yang, J., Chelf, B., Hallem, S., & Engler, D. (2001, October). An empirical study of operating systems errors. In Proceedings of the eighteenth ACM symposium on Operating systems principles (pp. 73-88).
+
 .. [Cooper2011] Cooper, M., `Advanced Bash-Scripting Guide`, http://tldp.org/LDP/abs/html/, 2011
 
 .. [Courtois+1971] Courtois, P., Heymans, F. and Parnas, D., `Concurrent control with “readers” and “writers”`. Commun. ACM 14, 10 (October 1971), 667-668. http://doi.acm.org/10.1145/362759.362813
@@ -96,6 +98,8 @@ Bibliographie
 .. [Nemeth+2010] Nemeth, E., Hein, T., Snyder, G., Whaley, B., `Unix and Linux System Administration Handbook`, Prentice Hall, 2010, http://books.google.be/books?id=rgFIAnLjb1wC
 
 .. [Peterson1981] Peterson, G., `Myths about the mutual exclusion problem`, Inform. Process. Lett. 12 (3) (1981) 115-116
+
+.. [Palix2011] Palix, N., Thomas, G., Saha, S., Calvès, C., Lawall, J., & Muller, G. (2011, March). Faults in Linux: Ten years later. In Proceedings of the sixteenth international conference on Architectural support for programming languages and operating systems (pp. 305-318).
 
 .. [Stallings2011] Stallings, W., `Operating Systems : Internals and Design Principles`, Prentice Hall, 2011, http://williamstallings.com/OperatingSystems/index.html
 
