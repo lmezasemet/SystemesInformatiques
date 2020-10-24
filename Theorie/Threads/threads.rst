@@ -1,5 +1,5 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Christoph Paasch et Grégory Detal
+.. Copyright |copy| 2012, 2020 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Etienne Rivière, Christoph Paasch, Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 .. _threads:
@@ -146,7 +146,7 @@ Cette capacité d'exécuter plusieurs threads d'exécution simultanément n'est 
 
 .. note:: D'autres types de threads
 
-À côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment implémenter des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes implémentations des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter sur le même processeur.
+ À côté des threads POSIX, il existe d'autres types de threads. [Gove2011]_ présente comment mettre en œuvre des threads sur différents systèmes d'exploitation. Sous Linux, NTPL [DrepperMolnar2005]_ et LinuxThreads [Leroy]_ sont deux anciennes implémentations des threads POSIX. GNU PTH [GNUPTH]_ est une librairie qui implémente les threads sans interaction directe avec le système d'exploitation. Cela permet à la librairie d'être portable sur de nombreux systèmes d'exploitation. Malheureusement, tous les threads GNU PTH d'un programme doivent s'exécuter sur le même processeur.
 
 
 
