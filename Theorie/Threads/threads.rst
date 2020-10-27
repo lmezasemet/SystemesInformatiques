@@ -7,8 +7,6 @@
 Utilisation de plusieurs threads
 ================================
 
-.. todo: remove assembly code
-
 Les performances des microprocesseurs se sont continuellement améliorées depuis les années 1960s. Cette amélioration a été possible grâce aux progrès constants de la micro-électronique qui a permis d'assembler des microprocesseurs contenant de plus en plus de transistors sur une surface de  plus en plus réduite. La figure [#ftransistors]_ ci-dessous illustre bien cette évolution puisqu'elle représente le nombre de transistors par microprocesseur en fonction du temps.
 
 .. spelling::
@@ -67,7 +65,7 @@ Cette progression continue des performances en MIPS a été possible grâce à l
 
 
 La notion de thread d'exécution est très importante dans un système informatique. Elle permet non seulement de comprendre comme un ordinateur équipé d'un seul microprocesseur peut exécuter plusieurs programmes simultanément, mais aussi comment des programmes peuvent profiter des nouveaux processeurs capables d'exécuter plusieurs threads simultanément. 
-.. Pour comprendre cette notion, il est intéressant de revenir à nouveau sur l'exécution d'une fonction en langage assembleur. 
+Pour comprendre cette notion, il est intéressant de revenir à nouveau sur l'exécution d'une fonction en langage assembleur.
 Considérons la fonction ``f`` :
 
  .. code-block:: c
@@ -82,42 +80,37 @@ Considérons la fonction ``f`` :
     return m;
   }
 
-  
-..
-	En assembleur, cette fonction se traduit en :
+En assembleur, cette fonction se traduit en :
 
-	.. code-block:: nasm
-		f:
-		subl	$16, %esp
-		movl	24(%esp), %eax
-		movl	20(%esp), %ecx
-		movl	%ecx, 12(%esp)
-		movl	%eax, 8(%esp)
-		movl	$0, 4(%esp)
-		movl	$0, (%esp)
-		.LBB0_1:
-		movl	(%esp), %eax
-		cmpl	8(%esp), %eax
-		jge	.LBB0_3
+.. code-block:: nasm
 
-		movl	12(%esp), %eax
-		movl	4(%esp), %ecx
-		addl	%eax, %ecx
-		movl	%ecx, 4(%esp)
-		movl	(%esp), %eax
-		addl	$1, %eax
-		movl	%eax, (%esp)
-		jmp	.LBB0_1
-		.LBB0_3:
-		movl	4(%esp), %eax
-		addl	$16, %esp
-		ret
+    f:
+	subl	$16, %esp
+	movl	24(%esp), %eax
+	movl	20(%esp), %ecx
+	movl	%ecx, 12(%esp)
+	movl	%eax, 8(%esp)
+	movl	$0, 4(%esp)
+	movl	$0, (%esp)
+	.LBB0_1:
+	movl	(%esp), %eax
+	cmpl	8(%esp), %eax
+	jge	.LBB0_3
 
-		.. il faut non seulement qu'il implémente chacune de ces instructions, mais également qu'il puisse accéder :
+	movl	12(%esp), %eax
+	movl	4(%esp), %ecx
+	addl	%eax, %ecx
+	movl	%ecx, 4(%esp)
+	movl	(%esp), %eax
+	addl	$1, %eax
+	movl	%eax, (%esp)
+	jmp	.LBB0_1
+	.LBB0_3:
+	movl	4(%esp), %eax
+	addl	$16, %esp
+	ret
 
-		
-
-Pour qu'un processeur puisse exécuter cette séquence d'instructions, il faut qu'il puisse accéder :
+Pour qu'un processeur puisse exécuter cette séquence d'instructions, il faut non seulement qu'il implémente chacune de ces instructions, mais également qu'il puisse accéder :
 
  - à la mémoire contenant les instructions à exécuter
  - à la mémoire contenant les données manipulées par cette séquence d'instruction. Pour rappel, cette mémoire est divisée en plusieurs parties :
@@ -126,11 +119,8 @@ Pour qu'un processeur puisse exécuter cette séquence d'instructions, il faut q
     - le tas 
     - la pile
 
+ - aux registres et plus particulièrement, il doit accéder :
 
- - aux registres, des zones de mémoire très rapide (mais peu nombreuses) se trouvant sur le processeur qui permettent de stocker entre autres : l'adresse de l'instruction à exécuter, des résultats intermédiaires obtenus durant l'exécution d'un instruction ou encore des informations sur la pile.
-   
-.. et plus particulièrement, il doit accéder :
-..
     - aux registres de données pour stocker les résultats de chacune des instructions
     - au registre ``%esp`` directement ou indirectement via les instructions ``push`` et ``pop`` qui permettent de manipuler la pile
     - au registre ``%eip`` qui contient l'adresse de l'instruction en cours d'exécution

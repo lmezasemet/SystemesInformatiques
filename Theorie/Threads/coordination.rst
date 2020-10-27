@@ -119,7 +119,53 @@ Les sémaphores peuvent être utilisés pour d'autres types de synchronisation. 
 
 Si un sémaphore initialisé à la valeur ``1`` est généralement utilisé comme un :term:`mutex`, il y a une différence importante entre les implémentations des sémaphores et des :term:`mutex`. Un sémaphore est conçu pour être manipulé par différents threads et il est fort possible qu'un thread exécute `sem_wait(3)`_ et qu'un autre exécute `sem_post(3)`_. Pour les mutex, certaines implémentations supposent que le même thread exécute `pthread_mutex_lock(3posix)`_ et `pthread_mutex_unlock(3posix)`_. Lorsque ces opérations doivent être effectuées dans des threads différents, il est préférable d'utiliser des sémaphores à la place de mutex.
 
+Problème du rendez-vous
+-----------------------
 
+Le problème du rendez-vous [Downey2008]_ est un problème assez courant dans les applications multithreadées. Considérons une application découpée en `N` threads. Chacun de ces threads travaille en deux phases. Durant la première phase, tous les threads sont indépendants et peuvent s'exécuter simultanément. Cependant, un thread ne peut démarrer sa seconde phase que si tous les `N` threads ont terminé leur première phase. L'organisation de chaque thread est donc :
+
+.. code-block:: c
+
+   premiere_phase();
+   // rendez-vous
+   seconde_phase();
+
+Chaque thread doit pouvoir être bloqué à la fin de la première phase en attendant que tous les autres threads aient fini d'exécuter leur première phase. Cela peut s'implémenter en utilisant un mutex et un sémaphore.
+
+
+.. code-block:: c
+
+   sem_t rendezvous;
+   pthread_mutex_t mutex;
+   int count=0;
+
+   sem_init(&rendezvous,0,0);
+
+
+La variable ``count`` permet de compter le nombre de threads qui ont atteint le point de rendez-vous. Le ``mutex`` protège les accès à la variable ``count`` qui est partagée entre les différents threads. Le sémaphore ``rendezvous`` est initialisé à la valeur ``0``. Le rendez-vous se fera en bloquant les threads sur le sémaphore ``rendezvous`` tant que les ``N`` threads ne sont pas arrivés à cet endroit.
+
+.. code-block:: c
+
+   premiere_phase();
+
+    // section critique
+    pthread_mutex_lock(&mutex);
+    count++;
+     if(count==N) {
+       // tous les threads sont arrivés
+       sem_post(&rendezvous);
+       }
+    pthread_mutex_unlock(&mutex);
+   // attente à la barrière
+   sem_wait(&rendezvous);
+   // libération d'un autre thread en attente
+   sem_post(&rendezvous);
+
+   seconde_phase();
+
+Le pseudo-code ci-dessus présente une solution permettant de résoudre ce problème du rendez-vous. Le sémaphore étant initialisé à ``0``, le premier thread qui aura terminé la première phase sera bloqué sur ``sem_wait(&rendezvous);``. Les ``N-1`` premiers threads qui auront terminé leur première phase seront tous bloqués à cet endroit. Lorsque le dernier thread finira sa première phase, il incrémentera ``count`` puis exécutera ``sem_post(&rendezvous);`` ce qui libèrera un premier thread. Le dernier thread sera ensuite bloqué sur ``sem_wait(&rendezvous);`` mais il ne restera pas bloqué longtemps car chaque fois qu'un thread parvient à passer ``sem_wait(&rendezvous);``, il exécute immédiatement ``sem_post(&rendezvous);`` ce qui permet de libérer un autre thread en cascade.
+
+Cette solution permet de résoudre le problème du rendez-vous avec un nombre fixe de threads. Certaines implémentations de la librairie des threads POSIX comprennent une barrière qui peut s'utiliser de la même façon que la solution ci-dessus. Une barrière est une structure de données de type ``pthread_barrier_t``. Elle s'initialise en utilisant la fonction `pthread_barrier_init(3posix)`_ qui prend trois arguments : un pointeur vers une barrière, des attributs optionnels et le nombre de threads qui doivent avoir atteint la barrière pour que celle-ci s'ouvre. La fonction `pthread_barrier_destroy(3posix)`_ permet de détruire une barrière. Enfin, la fonction `pthread_barrier_wait(3posix)`_ qui prend comme argument un pointeur vers une barrière bloque le thread correspondant à celle-ci tant que le nombre de threads requis pour passer la barrière n'a pas été atteint.
 
 Problème des producteurs-consommateurs
 --------------------------------------
@@ -201,7 +247,84 @@ De nombreux programmes découpés en threads fonctionnent avec un ensemble de pr
 
    Solaris
 
+Problème des readers-writers
+----------------------------
 
+Le :term:`problème des readers-writers` est un peu différent du précédent. Il permet de modéliser un problème qui survient lorsque des threads doivent accéder à une base de données [Courtois+1971]_. Les threads sont généralement de deux types.
+
+ - les lecteurs (`readers`) sont des threads qui lisent une structure de données (ou une base de données) mais ne la modifient pas. Comme ces threads se contentent de lire de l'information en mémoire, rien ne s'oppose à ce que plusieurs `readers` s'exécutent simultanément.
+ - les écrivains (`writers`). Ce sont des threads qui modifient une structure de données (ou une base de données). Pendant qu'un `writer` manipule la structure de données, il ne peut y avoir aucun autre `writer` ni de `reader` qui accède à cette structure de données. Sinon, la concurrence des opérations de lecture et d'écriture donnerait un résultat incorrect.
+
+Une première solution à ce problème est d'utiliser un mutex et un sémaphore [Courtois+1971]_.
+
+.. code-block:: c
+
+ pthread_mutex_t mutex;
+ sem_t db;  // accès à la db
+ int readcount=0; // nombre de readers
+
+ sem_init(&db, NULL, 1).
+
+La solution utilise une variable partagée : ``readcount``. L'accès à cette variable est protégé par ``mutex``. Le sémaphore ``db`` sert à réguler l'accès des `writers` à la base de données. Le mutex est initialisé comme d'habitude par la fonction `pthread_mutex_init(3posix)`_. Le sémaphore ``db`` est initialisé à la valeur ``1``. Le `writer` est assez simple :
+
+.. code-block:: c
+
+ void writer(void)
+ {
+  while(true)
+  {
+    prepare_data();
+    sem_wait(&db);
+      // section critique, un seul writer à la fois
+      write_database();
+    sem_post(&db);
+    }
+  }
+ }
+
+
+Le sémaphore ``db`` sert à assurer l'exclusion mutuelle entre les `writers` pour l'accès à la base de données. Le fonctionnement des `readers` est plus intéressant. Pour éviter un conflit entre les `writers` et les `readers`, il est nécessaire d'empêcher aux `readers` d'accéder à la base de données pendant qu'un `writer` la modifie. Cela peut se faire en utilisant l'entier `readcount` qui permet de compter le nombre de `readers` qui manipulent la base de données. Cette variable est testée et modifiée par tous les `readers`, elle doit donc être protégée par un :term:`mutex`. Intuitivement, lorsque le premier `reader` veut accéder à la base de données (``readcount==0``), il essaye de décrémenter le sémaphore ``db``. Si ce sémaphore est libre, le `reader` accède à la base de données. Sinon, il bloque sur ``sem_wait(&db);`` et comme il possède ``mutex``, tous les autres `readers` sont bloqués sur ``pthread_mutex_lock(&mutex);``. Dès que le premier `reader` est débloqué, il autorise en cascade l'accès à tous les autres `readers` qui sont en attente en libérant ``pthread_mutex_unlock(&mutex);``. Lorsqu'un `reader` arrête d'utiliser la base de données, il vérifie s'il était le dernier `reader`. Si c'est le cas, il libère le sémaphore ``db`` de façon à permettre à un `writer` d'y accéder. Sinon, il décrémente simplement la variable ``readcount`` pour tenir à jour le nombre de `readers` qui sont actuellement en train d'accéder à la base de données.
+
+
+.. code-block:: c
+
+  void reader(void)
+  {
+   while(true)
+   {
+     pthread_mutex_lock(&mutex);
+       // section critique
+       readcount++;
+       if (readcount==1)
+       { // arrivée du premier reader
+         sem_wait(&db);
+       }
+     pthread_mutex_unlock(&mutex);
+     read_database();
+     pthread_mutex_lock(&mutex);
+       // section critique
+       readcount--;
+       if(readcount==0)
+       { // départ du dernier reader
+         sem_post(&db);
+       }
+     pthread_mutex_unlock(&mutex);
+     process_data();
+   }
+  }
+
+.. Cette solution est un exemple atypique de l'utilisation de :term:`mutex` puisque le :term:`mutex` ``db`` peut être réservé par un thread `reader` et libéré par un tout autre thread. D'habitude, c'est généralement le même thread qui exécute `pthread_mutex_lock(3)`_ et `pthread_mutex_unlock(3)`_ pour un mutex donné.
+
+Cette solution fonctionne et garantit qu'il n'y aura jamais qu'un seul `writer` qui accède à la base de données. Malheureusement, elle souffre d'un inconvénient majeur lorsqu'il y a de nombreux `readers`. Dans ce cas, il est tout à fait possible qu'il y ait en permanence des `readers` qui accèdent à la base de données et que les `writers` soient toujours empêchés d'y accéder. En effet, dès que le premier `reader` a effectué ``sem_wait(&db);``, aucun autre `reader` ne devra exécuter cette opération tant qu'il restera au moins un `reader` accédant à la base de données. Les `writers` par contre resteront bloqués sur l'exécution de ``sem_wait(&db);``.
+
+En utilisant des sémaphores à la place des :term:`mutex`, il est possible de contourner ce problème. Cependant, cela nécessite d'utiliser plusieurs sémaphores. Intuitivement, l'idée de la solution est de donner priorité aux `writers` par rapport aux `readers`. Dès qu'un `writer` est prêt à accéder à la base de données, il faut empêcher de nouveaux `readers` d'y accéder tout en permettant aux `readers` présents de terminer leur lecture. Vous construirez ce mécanisme en séance de travaux dirigés.
+
+.. Readers-writers fair : à faire en TD
+
+.. note:: Read-Write locks
+
+ Certaines implémentations de la librairie des threads POSIX contiennent des `Read-Write locks`. Ceux-ci constituent une API de plus haut niveau qui s'appuie sur des sémaphores pour résoudre le :term:`problème des readers-writers`. Les fonctions de création et de suppression de ces locks sont : `pthread_rwlock_init(3posix)`_, `pthread_rwlock_destroy(3posix)`_. Les fonctions `pthread_rwlock_rdlock(3posix)`_ et `pthread_rwlock_unlock(3posix)`_ sont réservées aux readers tandis que les fonctions `pthread_rwlock_wrlock(3posix)`_ et `pthread_rwlock_unlock(3posix)`_ sont utilisables par les writers. Des exemples d'utilisation de ces `Read-Write locks` peuvent être obtenus dans [Gove2011]_.
+ 
 Compléments sur les threads POSIX
 =================================
 
@@ -209,45 +332,47 @@ Il existe différentes implémentations des threads POSIX. Les mécanismes de co
 
 Il reste cependant quelques concepts qu'il est utile de connaître lorsque l'on développe des programmes découpés en threads en langage C.
 
+Variables ``volatile``
+----------------------
 
-..
-	Variables ``volatile``
-	----------------------
+Normalement, dans un programme C, lorsqu'une variable est définie, ses accès sont contrôlés entièrement par le compilateur. Si la variable est utilisée dans plusieurs calculs successifs, il peut être utile d'un point de vue des performances de stocker la valeur de cette variable dans un registre pendant au moins le temps correspondant à l'exécution de quelques instructions [#fregister]_. Cette optimisation peut éventuellement poser des difficultés dans certains programmes utilisant des threads puisqu'une variable peut être potentiellement modifiée ou lue par plusieurs threads simultanément.
 
-	Normalement, dans un programme C, lorsqu'une variable est définie, ses accès sont contrôlés entièrement par le compilateur. Si la variable est utilisée dans plusieurs calculs successifs, il peut être utile d'un point de vue des performances de stocker la valeur de cette variable dans un registre pendant au moins le temps correspondant à l'exécution de quelques instructions [#fregister]_. Cette optimisation peut éventuellement poser des difficultés dans certains programmes utilisant des threads puisqu'une variable peut être potentiellement modifiée ou lue par plusieurs threads simultanément.
+Les premiers compilateurs C avaient pris en compte un problème similaire. Lorsqu'un programme ou un système d'exploitation interagit avec des dispositifs d'entrée-sortie, cela se fait parfois en permettant au dispositif d'écrire directement en mémoire à une adresse connue par le système d'exploitation. La valeur présente à cette adresse peut donc être modifiée par le dispositif d'entrée-sortie sans que le programme ne soit responsable de cette modification. Face à ce problème, les inventeurs du langage C ont introduit le qualificatif ``volatile``. Lorsqu'une variable est ``volatile``, cela indique au compilateur qu'il doit recharger la variable de la mémoire chaque fois qu'elle est utilisée.
 
-	Les premiers compilateurs C avaient pris en compte un problème similaire. Lorsqu'un programme ou un système d'exploitation interagit avec des dispositifs d'entrée-sortie, cela se fait parfois en permettant au dispositif d'écrire directement en mémoire à une adresse connue par le système d'exploitation. La valeur présente à cette adresse peut donc être modifiée par le dispositif d'entrée-sortie sans que le programme ne soit responsable de cette modification. Face à ce problème, les inventeurs du langage C ont introduit le qualificatif ``volatile``. Lorsqu'une variable est ``volatile``, cela indique au compilateur qu'il doit recharger la variable de la mémoire chaque fois qu'elle est utilisée.
+Pour bien comprendre l'impact de ce qualificatif, il est intéressant d'analyser le code assembleur généré par un compilateur C dans l'exemple suivant.
 
-	Pour bien comprendre l'impact de ce qualificatif, il est intéressant d'analyser le code assembleur généré par un compilateur C dans l'exemple suivant.
+.. code-block:: c
 
+    int x=1;
+    int v[2];
 
-	.. code-block:: c
-	    int x=1;
-	    int v[2];
-	    void f(void ) {
-	      v[0]=x;
-	      v[1]=x;
-	    }
+    void f(void ) {
+      v[0]=x;
+      v[1]=x;
+    }
 
-	Dans ce cas, la fonction ``f`` est traduite en la séquence d'instructions suivante :
+Dans ce cas, la fonction ``f`` est traduite en la séquence d'instructions suivante :
 
-	.. code-block:: nasm
-	   f:
-		movl	x, %eax
-		movl	%eax, v
-		movl	%eax, v+4
-		ret
-	Si par contre la variable ``x`` est déclarée comme étant ``volatile``, le compilateur ajoute une instruction ``movl x, %eax`` qui permet de recharger la valeur de ``x`` dans un registre avant la seconde utilisation.
+.. code-block:: nasm
 
-	.. code-block:: nasm
-	   f:
-		movl	x, %eax
-		movl	%eax, v
-		movl	x, %eax
-		movl	%eax, v+4
-		ret
+   f:
+ 	movl	x, %eax
+	movl	%eax, v
+	movl	%eax, v+4
+	ret
 
-	Le qualificatif ``volatile`` force le compilateur à recharger la variable depuis la mémoire avant chaque utilisation. Ce qualificatif est utile lorsque le contenu stocké à une adresse mémoire peut être modifié par une autre source que le programme lui-même. C'est le cas dans les threads, mais marquer les variables partagées par des threads comme ``volatile`` ne suffit pas. Si ces variables sont modifiées par certains threads, il est nécessaire d'utiliser des :term:`mutex` ou d'autres techniques de coordination pour réguler l'accès en ces variables partagées. En pratique, la documentation du programme devra spécifier quelles variables sont partagées entre les threads et la technique de coordination éventuelle qui est utilisée pour en réguler les accès. L'utilisation du qualificatif ``volatile`` permet de forcer le compilateur à recharger le contenu de la variable depuis la mémoire avant toute utilisation. C'est une règle de bonne pratique qu'il est utile de suivre. Il faut cependant noter que dans l'exemple ci-dessus, l'utilisation du qualificatif ``volatile`` augmente le nombre d'accès à la mémoire et peut donc dans certains cas réduire les performances. 
+Si par contre la variable ``x`` est déclarée comme étant ``volatile``, le compilateur ajoute une instruction ``movl x, %eax`` qui permet de recharger la valeur de ``x`` dans un registre avant la seconde utilisation.
+
+.. code-block:: nasm
+
+   f:
+	movl	x, %eax
+	movl	%eax, v
+	movl	x, %eax
+	movl	%eax, v+4
+	ret
+
+Le qualificatif ``volatile`` force le compilateur à recharger la variable depuis la mémoire avant chaque utilisation. Ce qualificatif est utile lorsque le contenu stocké à une adresse mémoire peut être modifié par une autre source que le programme lui-même. C'est le cas dans les threads, mais marquer les variables partagées par des threads comme ``volatile`` ne suffit pas. Si ces variables sont modifiées par certains threads, il est nécessaire d'utiliser des :term:`mutex` ou d'autres techniques de coordination pour réguler l'accès en ces variables partagées. En pratique, la documentation du programme devra spécifier quelles variables sont partagées entre les threads et la technique de coordination éventuelle qui est utilisée pour en réguler les accès. L'utilisation du qualificatif ``volatile`` permet de forcer le compilateur à recharger le contenu de la variable depuis la mémoire avant toute utilisation. C'est une règle de bonne pratique qu'il est utile de suivre. Il faut cependant noter que dans l'exemple ci-dessus, l'utilisation du qualificatif ``volatile`` augmente le nombre d'accès à la mémoire et peut donc dans certains cas réduire les performances.
 
 Variables spécifiques à un thread
 ---------------------------------
@@ -363,6 +488,32 @@ La fonction `strerror_r(3)`_ évite ce problème de tableau statique en utilisan
     }
 
 Lorsque l'on intègre des fonctions provenant de la librairie standard ou d'une autre librairie dans un programme découpé en threads, il est important de vérifier que les fonctions utilisées sont bien :term:`thread-safe`. La page de manuel `pthreads(7)`_ liste les fonctions qui ne sont pas :term:`thread-safe` dans la librairie standard.
+
+Loi de Amdahl
+=============
+
+En découpant un programme en threads, il est théoriquement possible d'améliorer les performances du programme en lui permettant d'exécuter plusieurs threads d'exécution simultanément. Dans certains cas, la découpe d'un programme en différents threads est naturelle et relativement facile à réaliser. Dans d'autres cas, elle est nettement plus compliquée. Pour s'en convaincre, il suffit de considérer un grand tableau contenant plusieurs centaines de millions de nombres. Considérons un programme simple qui doit trouver dans ce tableau quel est l'élément du tableau pour lequel l'application d'une fonction complexe ``f`` donne le résultat minimal. Une implémentation purement séquentielle se contenterait de parcourir l'entièreté du tableau et d'appliquer la fonction ``f`` à chacun des éléments. A la fin de son exécution, le programme retournera l'élément qui donne la valeur minimale. Un tel problème est très facile à découper en threads. Il suffit de découper le tableau en ``N`` sous-tableaux, de lancer un thread de calcul sur chaque sous-tableau et ensuite de fusionner les résultats de chaque thread.
+
+Un autre problème est de trier le contenu d'un tel tableau dans l'ordre croissant. De nombreux algorithmes séquentiels de tri existent pour ordonner un tableau. La découpe de ce problème en thread est nettement moins évidente que dans le problème précédent et les algorithmes de tri adaptés à une utilisation dans plusieurs threads ne sont pas une simple extension des algorithmes séquentiels.
+
+Dans les années 1960s, à l'époque des premières réflexions sur l'utilisation de plusieurs processeurs pour résoudre un problème, Gene Amdahl [Amdahl1967]_ a analysé quelles étaient les gains que l'on pouvait attendre de l'utilisation de plusieurs processeurs. Dans sa réflexion, il considère un programme ``P`` qui peut être découpé en deux parties :
+
+ - une partie purement séquentielle. Il s'agit par exemple de l'initialisation de l'algorithme utilisé, de la collecte des résultats, ...
+ - une partie qui est parallélisable. Il s'agit en général du coeur de l'algorithme.
+
+Plus les opérations réalisées à l'intérieur d'un programme sont indépendantes entre elles, plus le programme est parallélisable et inversement. Pour Amdahl, si le temps d'exécution d'un programme séquentiel est `T` et qu'une fraction `f` de ce programme est parallélisable, alors le gain qui peut être obtenu de la parallélisation est :math:`\frac{T}{T \times( (1-f)+\frac{f}{N})}=\frac{1}{ (1-f)+\frac{f}{N}}` lorsque le programme est découpé en `N` threads. Cette formule, connue sous le nom de la :term:`loi de Amdahl` fixe une limite théorique sur le gain que l'on peut obtenir en parallélisant un programme. La figure ci-dessous [#famdahl]_ illustre le gain théorique que l'on peut obtenir en parallélisant un programme en fonction du nombre de processeur et pour différentes fractions parallélisables.
+
+.. figure:: /Threads/figures/500px-AmdahlsLaw.png
+   :align: center
+   :scale: 80
+
+   Loi de Amdahl (source `wikipedia <http://en.wikipedia.org/wiki/Amdahl's_law>`_)
+
+La loi de Amdahl doit être considérée comme un maximum théorique qui est difficile d'atteindre. Elle suppose que la parallélisation est  parfaite, c'est-à-dire que la création et la terminaison de threads n'ont pas de coût en terme de performance. En pratique, c'est loin d'être le cas et il peut être difficile d'estimer a priori le gain qu'une parallélisation permettra d'obtenir. En pratique, avant de découper un programme séquentiel en threads, il est important de bien identifier la partie séquentielle et la partie parallélisable du programme. Si la partie séquentielle est trop importante, le gain dû à la parallélisation risque d'être faible. Si par contre la partie purement séquentielle est faible, il est possible d'obtenir théoriquement des gains élevés. Le tout sera de trouver des solutions efficaces qui permettront aux threads de fonctionner le plus indépendamment possible.
+
+En pratique, avant de s'attaquer à la découpe d'un programme séquentiel en threads, il est important de bien comprendre quelles sont les parties du programme qui sont les plus consommatrices de temps CPU. Ce seront souvent les boucles ou les grandes structures de données. Si le programme séquentiel existe, il est utile d'analyser son exécution avec des outils de profiling tels que `gprof(1)`_  [Graham+1982]_ ou `oprofile <http://oprofile.sourceforge.net/>`_. Un profiler est un logiciel qui permet d'analyser l'exécution d'un autre logiciel de façon à pouvoir déterminer notamment quelles sont les fonctions ou parties du programmes les plus exécutées. Ces parties de programme sont celles sur lesquelles l'effort de paraléllisation devra porter en pratique.
+
+Dans un programme découpé en threads, toute utilisation de fonctions de coordination comme des sémaphores ou des mutex, bien qu'elle soit nécessaire pour la correction du programme, risque d'avoir un impact négatif sur les performances. Pour s'en convaincre, il est intéressant de réfléchir au problème des producteurs-consommateurs. Il correspond à de nombreux programmes réels. Les performances d'une implémentation du problème des producteurs consommateurs dépendront fortement de la taille du buffer entre les producteurs et les consommateurs et de leur nombre et/ou vitesses relatives. Idéalement, il faudrait que le buffer soit en moyenne rempli à moitié. De cette façon, chaque producteur pourra déposer de l'information dans le buffer et chaque consommateur pourra en retirer. Si le buffer est souvent vide, cela indique que les consommateurs sont plus rapides que les producteurs. Ces consommateurs risquent d'être inutilement bloqués, ce qui affectera les performances. Il en va de même si le buffer était plein. Dans ce cas, les producteurs seraient souvent bloqués.
 
 .. rubric:: Footnotes
 

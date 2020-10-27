@@ -301,6 +301,110 @@ Pour montrer que cette solution répond bien au problème de l'exclusion mutuell
 
 Pour montrer que la propriété de vivacité est bien respectée, il faut montrer qu'un thread ne sera pas empêché éternellement d'entrer dans sa section critique. Un thread peut être empêché d'entrer dans sa section critique en étant bloqué sur l'appel à `pthread_mutex_lock(3posix)`_. Comme chaque thread exécute `pthread_mutex_unlock(3posix)`_ dès qu'il sort de sa section critique, le thread en attente finira par être exécuté. Pour qu'un thread utilisant le code ci-dessus ne puisse jamais entrer en section critique, il faudrait qu'il y aie en permanence plusieurs threads en attente sur `pthread_mutex_unlock(3posix)`_ et que notre thread ne soit jamais sélectionné par le système lorsque le thread précédent termine sa section critique.
 
+Le problème des philosophes
+---------------------------
+
+Le problème de l'exclusion mutuelle considère le cas de plusieurs threads qui se partagent une ressource commune qui doit être manipulée de façon exclusive. C'est un problème fréquent qui se pose lorsque l'on développe des programmes décomposés en différents threads d'exécution, mais ce n'est pas le seul. En pratique, il est souvent nécessaire de coordonner l'accès de *plusieurs* threads à *plusieurs* ressources, chacune de ces ressources devant être utilisée de façon exclusive. Cette utilisation de plusieurs ressources simultanément peut poser des difficultés. Un des problèmes classiques qui permet d'illustrer la difficulté de coordonner l'accès à plusieurs ressources est le `problème des philosophes`. Ce problème a été proposé par Dijkstra et illustre en termes simples la difficulté de coordonner l'accès à plusieurs ressources.
+
+Dans le :term:`problème des philosophes`, un ensemble de philosophes doivent se partager des baguettes pour manger. Tous les philosophes se trouvent dans une même pièce qui contient une table circulaire. Chaque philosophe dispose d'une place qui lui est réservée sur cette table. La table comprend autant de baguettes que de chaises et une baguette est placée entre chaque paire de chaises. Chaque philosophe est modélisé sous la forme d'un thread qui effectue deux types d'actions : `penser` et `manger`. Pour pouvoir manger, un philosophe doit obtenir la baguette qui se trouve à sa gauche et la baguette qui se trouve à sa droite. Lorsqu'il a fini de manger, il peut retourner à son activité philosophale. La figure ci-dessous illustre une table avec les assiettes de trois philosophes et les trois baguettes qui sont à leur disposition.
+
+.. figure:: /Threads/S6-fig/figures-002-c.png
+   :align: center
+
+   Problème des philosophes
+
+
+Ce problème de la vie courante peut se modéliser en utilisant un programme C avec les threads POSIX. Chaque baguette est une ressource partagée qui ne peut être utilisée que par un philosophe à la fois. Elle peut donc être modélisée par un :term:`mutex`. Chaque philosophe est modélisé par un thread qui pense puis ensuite appelle `pthread_mutex_lock(3posix)`_ pour obtenir chacune de ses baguettes. Le philosophe peut ensuite manger puis il libère ses baguettes en appelant `pthread_mutex_unlock(3posix)`_. L'extrait [#fphilo]_ ci-dessous comprend les fonctions utilisées par chacun des threads.
+
+.. literalinclude:: /Threads/S6-src/pthread-philo.c
+   :encoding: utf-8
+   :language: c
+   :start-after: ///AAA
+   :end-before: ///BBB
+
+Malheureusement, cette solution ne permet pas de résoudre le problème des philosophes. En effet, la première exécution du programme (:download:`/Threads/S6-src/pthread-philo.c`) indique à l'écran que les philosophes se partagent les baguettes puis après une fraction de seconde le programme s'arrête en affichant une sortie qui se termine :
+
+.. code-block:: console
+
+   Philosophe [0] a libéré baguette gauche [0]
+   Philosophe [0] a libéré baguette droite [1]
+   Philosophe [0] pense
+   Philosophe [0] possède baguette gauche [0]
+   Philosophe [2] possède baguette gauche [2]
+   Philosophe [1] possède baguette gauche [1]
+
+Ce blocage de programme est un autre problème majeur auquel il faut faire attention lorsque l'on découpe un programme en plusieurs threads d'exécution. Il porte le nom de :term:`deadlock` que l'on peut traduire en français pas étreinte fatale. Un programme est en situation de deadlock lorsque tous ses threads d'exécution sont bloqués et qu'aucun d'entre eux ne peux être débloqué sans exécuter d'instructions d'un des threads bloqués. Dans ce cas particulier, le programme est bloqué parce que le ``philosophe[0]`` a pu réserver la ``baguette[0]``. Malheureusement, en même temps le ``philosophe[2]`` a obtenu ``baguette[2]`` et ``philosophe[0]`` est donc bloqué sur la ligne ``pthread_mutex_lock(&baguette[right]);``. Entre temps, le  ``philosophe[1]`` a pu exécuter la ligne ``pthread_mutex_lock(&baguette[left]);`` et a obtenu ``baguette[1]``. Dans cet état, tous les threads sont bloqués sur la ligne ``pthread_mutex_lock(&baguette[right]);`` et plus aucun progrès n'est possible.
+
+.. todo:: conditions deadlock .. comment:: A deadlock situation can arise only if all of the following conditions hold simultaneously in a system:[1] Mutual Exclusion: At least one resource must be non-shareable.[1] Only one process can use the resource at any given instant of time. Hold and Wait or Resource Holding: A process is currently holding at least one resource and requesting additional resources which are being held by other processes. No Preemption: The operating system must not de-allocate resources once they have been allocated; they must be released by the holding process voluntarily. Circular Wait: A process must be waiting for a resource which is being held by another process, which in turn is waiting for the first process to release the resource. In general, there is a set of waiting processes, P = {P1, P2, ..., PN}, such that P1 is waiting for a resource held by P2, P2 is waiting for a resource held by P3 and so on till PN is waiting for a resource held by P1.[1][7] These four conditions are known as the Coffman conditions from their first description in a 1971 article by Edward G. Coffman, Jr.[7] Unfulfillment of any of these conditions is enough to preclude a deadlock from occurring.
+
+
+Ce problème de deadlock est un des problèmes les plus graves qui peuvent survenir dans un programme découpé en plusieurs threads. Si les threads entrent dans une situation de deadlock, le programme est complètement bloqué et la seule façon de sortir du deadlock est d'arrêter le programme et de le redémarrer. Ce n'est évidemment pas acceptable. Dans l'exemple des philosophes ci-dessus, le deadlock apparait assez rapidement car les threads passent la majorité de leur temps à exécuter les fonctions de la librairie threads POSIX. En pratique, un thread exécute de nombreuses lignes de code standard et utilise rarement la fonction `pthread_mutex_lock(3posix)`_. Dans de tels programmes, les tests ne permettent pas nécessairement de détecter toutes les situations qui peuvent causer un deadlock. Il est important que le programme soit conçu de façon à toujours éviter les deadlocks. Si c'est n'est pas le cas, le programme finira toujours bien à se retrouver en situation de deadlock après un temps plus ou moins long.
+
+Le problème des philosophes est une illustration d'un problème courant dans lequel plusieurs threads doivent utiliser deux ou plusieurs ressources partagées contrôlées par un mutex. Dans la situation de deadlock, chaque thread est bloqué à l'exécution de la ligne ``pthread_mutex_lock(&baguette[right]);``. On pourrait envisager de chercher à résoudre le problème en inversant les deux appels à `pthread_mutex_lock(3posix)`_ comme ci-dessous :
+
+.. code-block:: c
+
+    pthread_mutex_lock(&baguette[right]);
+    pthread_mutex_lock(&baguette[left]);
+
+Malheureusement, cette solution ne résout pas le problème du deadlock. La seule différence par rapport au programme précédent est que les mutex qui sont alloués à chaque thread en deadlock ne sont pas les mêmes. Avec cette nouvelle version du programme, lorsque le deadlock survient, les mutex suivants sont alloués :
+
+.. code-block:: console
+
+   Philosophe [2] possède baguette droite [1]
+   Philosophe [0] possède baguette droite [2]
+   Philosophe [1] possède baguette droite [0]
+
+
+Pour comprendre l'origine du deadlock, il faut analyser plus en détails le fonctionnement du programme et l'ordre dans lequel les appels à `pthread_mutex_lock(3posix)`_ sont effectués. Trois mutex sont utilisés dans le programme des philosophes : ``baguette[0]``, ``baguette[1]`` et ``baguette[2]``. De façon imagée, chaque philosophe s'approprie d'abord la baguette se trouvant à sa gauche et ensuite la baguette se trouvant à sa droite.
+
+==================    ================   ===============
+Philosophe            premier mutex      second mutex
+==================    ================   ===============
+``philosophe[0]``     ``baguette[2]``    ``baguette[0]``
+``philosophe[1]``     ``baguette[0]``    ``baguette[1]``
+``philosophe[2]``     ``baguette[1]``    ``baguette[2]``
+==================    ================   ===============
+
+L'origine du deadlock dans cette solution au problème des philosophes est l'ordre dans lequel les différents philosophes s'approprient les mutex. Le ``philosophe[0]`` s'approprie d'abord le mutex ``baguette[2]`` et ensuite essaye de s'approprier le mutex ``baguette[0]``. Le ``philosophe[1]`` par contre peut lui directement s'approprier le mutex ``baguette[0]``. Au vu de l'ordre dans lequel les mutex sont alloués, il est possible que chaque thread se soit approprié son premier mutex mais soit bloqué sur la réservation du second. Dans ce cas, un deadlock se produit puisque chaque thread est en attente de la libération d'un mutex sans qu'il ne puisse libérer lui-même le mutex qu'il s'est déjà approprié.
+
+Il est cependant possible de résoudre le problème en forçant les threads à s'approprier les mutex qu'ils utilisent dans le même ordre. Considérons le tableau ci-dessous dans lequel ``philosophe[0]`` s'approprie d'abord le mutex ``baguette[0]`` et ensuite le mutex ``baguette[2]``.
+
+==================    ================   ===============
+Philosophe            premier mutex      second mutex
+==================    ================   ===============
+``philosophe[0]``     ``baguette[0]``    ``baguette[2]``
+``philosophe[1]``     ``baguette[0]``    ``baguette[1]``
+``philosophe[2]``     ``baguette[1]``    ``baguette[2]``
+==================    ================   ===============
+
+Avec cet ordre d'allocation des mutex, un deadlock n'est plus possible. Il y aura toujours au moins un philosophe qui pourra s'approprier les deux baguettes dont il a besoin pour manger. Pour s'en convaincre, analysons les différentes exécutions possibles. Un deadlock ne pourrait survenir que si tous les philosophes cherchent à manger simultanément. Si un des philosophes ne cherche pas à manger, ses deux baguettes sont nécessairement libres et au moins un de ses voisins philosophes pourra manger. Lorsque tous les philosophes cherchent à manger simultanément, le mutex  ``baguette[0]`` ne pourra être attribué qu'à ``philosophe[0]`` ou ``philosophe[1]``. Considérons les deux cas possibles.
+
+ 1. ``philosophe[0]`` s'approprie ``baguette[0]``. Dans ce cas, ``philosophe[1]`` est bloqué sur son premier appel à `pthread_mutex_lock(3posix)`_. Comme ``philosophe[1]`` n'a pas pu s'approprier le mutex ``baguette[0]``, il ne peut non plus s'approprier ``baguette[1]``. ``philosophe[2]`` pourra donc s'approprier le mutex ``baguette[1]``. ``philosophe[0]``  et ``philosophe[2]`` sont maintenant en compétition pour le mutex ``baguette[2]``. Deux cas sont à nouveau possibles.
+
+    a. ``philosophe[0]`` s'approprie ``baguette[2]``. Comme c'est le second mutex nécessaire à ce philosophe, il peut manger. Pendant ce temps, ``philosophe[2]`` est bloqué en attente de ``baguette[2]``. Lorsque ``philosophe[0]`` aura terminé de manger, il libèrera les mutex ``baguette[2]`` et ``baguette[0]``, ce qui permettra à ``philosophe[2]`` ou ``philosophe[1]`` de manger.
+    b. ``philosophe[2]`` s'approprie ``baguette[2]``. Comme c'est le second mutex nécessaire à ce philosophe, il peut manger. Pendant ce temps, ``philosophe[0]`` est bloqué en attente de ``baguette[2]``. Lorsque ``philosophe[2]`` aura terminé de manger, il libèrera les mutex ``baguette[2]`` et ``baguette[1]``, ce qui permettra à ``philosophe[0]`` ou ``philosophe[1]`` de manger.
+
+ 2. ``philosophe[1]`` s'approprie ``baguette[0]``. Le même raisonnement que ci-dessus peut être suivi pour montrer qu'il n'y a pas de deadlock non plus dans ce cas.
+
+La solution présentée empêche tout deadlock puisqu'à tout moment il n'y a au moins un philosophe qui peut manger. Malheureusement, il est possible avec cette solution qu'un philosophe mange alors que chacun des autres philosophes a pu s'approprier une baguette. Lorsque le nombre de philosophes est élevé (imaginez un congrès avec une centaine de philosophes), cela peut être une source importante d'inefficacité au niveau des performances.
+
+Une implémentation possible de l'ordre présenté dans la table ci-dessus est reprise dans le programme :download:`/Threads/S6-src/pthread-philo2.c` qui comprend la fonction ``philosophe`` suivante.
+
+.. literalinclude:: /Threads/S6-src/pthread-philo2.c
+   :encoding: utf-8
+   :language: c
+   :start-after: ///AAA
+   :end-before: ///BBB
+
+
+Ce problème des philosophes est à l'origine d'une règle de bonne pratique essentielle pour tout programme découpé en threads dans lequel certains threads doivent acquérir plusieurs mutex. Pour éviter les deadlocks, il est nécessaire d'ordonnancer tous les mutex utilisés par le programme dans un ordre strict. Lorsqu'un thread doit réserver plusieurs mutex en même temps, il doit *toujours* effectuer ses appels à `pthread_mutex_lock(3posix)`_ dans l'ordre choisi pour les mutex. Si cet ordre n'est pas respecté par un des threads, un deadlock peut se produire.
+
+
+.. todo:: expliquer
+
+
+.. Il est intéressant d'examiner ce qu'il s'est passé durant cette exécution. Les trois philosophes ont été lancés rapidement. Lorsque ``philosophe[0]`` mange, il utilise les mutex ``baguette[0]`` et ``baguette[2]``. Le ``philosophe[1]`` lui utilise les baguettes ``baguette[1]`` et ``baguette[0]``, ... Le premier cas intéressant est lorsque les trois philosophes pensent en même temps. Dès qu'ils se décident de manger, ils sont en compétition pour l'accès aux baguettes. Manifestement, c'est ``philosophe[0]`` qui parvient à exécuter ses deux appels ``pthread_mutex_lock(&baguette[left]);`` et ``pthread_mutex_lock(&baguette[right]);``. A ce moment, ``philosophe[2]`` avait déjà exécuté l'appel `
 
 .. rubric:: Footnotes
 
