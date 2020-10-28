@@ -80,17 +80,17 @@ La variable ``global`` est stockée dans une zone mémoire qui est accessibles a
 
 Malheureusement les difficultés surviennent lorsque deux threads exécutent en même temps la ligne ``global=increment(global);``. Supposons qu'à cet instant, la valeur de la variable ``global`` est ``1252``. Le premier thread charge une copie de cette variable sur sa pile. Le second fait de même. Les deux threads ont donc chacun passé la valeur ``1252`` comme argument à la fonction ``increment``. Celle-ci s'exécute et retourne la valeur ``1253`` que chaque thread va récupérer dans ``%eax``. Chaque thread va ensuite transférer cette valeur dans la zone mémoire correspondant à la variable ``global``. Si les deux threads exécutent l'instruction assembleur correspondante exactement au même moment, les deux écritures en mémoire seront sérialisées par les processeurs sans que l'on ne puisse a priori déterminer quelle écriture se fera en premier [McKenney2005]_. Alors que les deux threads ont chacun exécuté un appel à la fonction ``increment``, la valeur de la variable n'a finalement été incrémentée qu'une seule fois même si cette valeur a été transférée deux fois en mémoire. Ce problème se reproduit fréquemment. C'est pour cette raison que la valeur de la variable ``global`` n'est pas modifiée comme attendu.
 
-.. note:: Contrôler la pile d'un thread POSIX
-
- La taille de la pile d'un thread POSIX est l'un des attributs qui peuvent être modifiés lors de l'appel à `pthread_create(3)`_  pour créer un nouveau thread. Cet attribut peut être fixé en utilisant la fonction `pthread_attr_setstackaddr(3posix)`_ comme illustré dans l'exemple ci-dessous [#fpthreadc]_ (où ``thread_first`` est la fonction qui sera appelée à la création du thread). En général, la valeur par défaut choisie par le système suffit, sauf lorsque le programmeur sait qu'un thread devra par exemple allouer un grand tableau auquel il sera le seul à avoir accès. Ce tableau sera alors alloué sur la pile qui devra être suffisamment grande pour le contenir.
- 
- **TODO expliquer ce qui se passe lorsque la taille de la stack est insuffisante**
-
- .. literalinclude:: /Threads/S6-src/pthread.c
-    :encoding: utf-8
-    :language: c
-    :start-after: ///AAA
-    :end-before: ///BBB
+.. .. note:: Contrôler la pile d'un thread POSIX
+..
+..  La taille de la pile d'un thread POSIX est l'un des attributs qui peuvent être modifiés lors de l'appel à `pthread_create(3)`_  pour créer un nouveau thread. Cet attribut peut être fixé en utilisant la fonction `pthread_attr_setstackaddr(3posix)`_ comme illustré dans l'exemple ci-dessous [#fpthreadc]_ (où ``thread_first`` est la fonction qui sera appelée à la création du thread). En général, la valeur par défaut choisie par le système suffit, sauf lorsque le programmeur sait qu'un thread devra par exemple allouer un grand tableau auquel il sera le seul à avoir accès. Ce tableau sera alors alloué sur la pile qui devra être suffisamment grande pour le contenir.
+..
+..  **TODO expliquer ce qui se passe lorsque la taille de la stack est insuffisante**
+..
+..  .. literalinclude:: /Threads/S6-src/pthread.c
+..     :encoding: utf-8
+..     :language: c
+..     :start-after: ///AAA
+..     :end-before: ///BBB
 
 
 Ce problème d'accès concurrent à une zone de mémoire par plusieurs threads est un problème majeur dans le développement de programmes découpés en threads, que ceux-ci s'exécutent sur des ordinateurs mono-processeurs ou multiprocesseurs. Dans la littérature, il est connu sous le nom de problème de la :term:`section critique`. La :term:`section critique` peut être définie comme étant une séquence d'instructions qui ne peuvent *jamais* être exécutées par plusieurs threads simultanément. Dans l'exemple ci-dessus, il s'agit de la ligne ``global=increment(global);``. Dans d'autres types de programmes, la section critique peut être beaucoup plus grande et comprendre par exemple la mise à jour d'une base de données. En pratique, on retrouvera une section critique chaque fois que deux threads peuvent modifier ou lire la valeur d'une même zone de la mémoire.
