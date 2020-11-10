@@ -229,8 +229,8 @@ Comme la variable ``turn`` ne peut prendre que la valeur ``A`` ou la valeur ``B`
 
 Enfin, considérons l'impact de l'arrêt d'un des deux threads. Si thread ``A`` s'arrête hors de sa section critique, ``flag[A]`` a la valeur ``false`` et le thread ``B`` pourra toujours accéder à sa section critique.
 
-Algorithme du filtre : étendre le principe de l'algorithme de Peterson pour plus que deux threads
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Algorithme du filtre
+^^^^^^^^^^^^^^^^^^^^
 
 La version de l'algorithme de Peterson que nous avons vu permet de synchroniser l'accès à la section critique de *seulement* deux threads.
 Il est possible d'étendre son principe pour supporter plusieurs threads, sous le principe de l'algorithme dit du filtre (Filter algorithm), lui aussi proposé par Gary L. Peterson.
@@ -446,25 +446,54 @@ Par :
  Ceci est toujours bénéfique dans le cas d'un mono-processeur.
  Ce l'est aussi dans la majorité des cas sur un multi-processeur, mais pas toujours, comme nous le verrons plus tard dans ce chapitre.
 
-Implémentation des algorithmes d'exclusion mutuelle fondés sur des lectures et écritures
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. La caractéristique commune des algorithmes d'exclusion mutuelle que nous avons présenté jusqu'à présent est de n'utiliser que des opérations de lecture et écriture vers des structures de données partagées, comme les tableaux ``ticket[]`` et ``drapeau[]`` du l'algorithme Bakery.
+.. Pour que les propriété d'exclusion mutuelle soient garanties, ces algorithmes font l'hypothèse que les opérations d'écriture et de lecture sont effectuées dans l'ordre dans lequel elles apparaissent dans le programme.
+.. Par exemple, dans l'algorithme de Peterson,
 
+Utilisation d'instructions atomiques
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-La caractéristique commune des algorithmes d'exclusion mutuelle que nous avons présenté jusqu'à présent 
+Sur les ordinateurs actuels, il devient difficile d'utiliser les algorithmes de Peterson, du filtre, ou de Bakery tel qu'ils ont été décrits précédemment et ce pour trois raisons.
 
-TODO discuter des barrières mémoires (atomic ne suffisant pas)
+Premièrement, ces algorithmes nécessitent de connaître le nombre de threads pouvant potentiellement accéder de façon concurrente à leur section critique.
+Ce nombre n'est pas toujours connu à l'avance, ce qui limite les possibilités de fournir des algorithmes génériques.
+Si on utilise un nombre maximal de threads comme une limite haute de la concurrence, alors le coût en mémoire (taille des tableaux partagés) et en temps d'exécution (e.g. parcours de ces tableaux pour l'algorithme Bakery ou parcours des filtres à différents niveaux pour l'algorithme du filtre) deviennent très importants.
 
+Deuxièmement, les compilateurs C sont capables d'optimiser le code qu'ils génèrent.
+Pour cela, ils analysent le programme à compiler et peuvent supprimer des instructions qui leur semblent être inutiles.
+Dans le cas de l'algorithme de Peterson, le compilateur pourrait très bien considérer que la boucle ``while`` est inutile puisque les variables ``turn`` et ``flag`` ont été initialisées juste avant d'entrer dans la boucle.
 
-Utilisation d'instruction atomique
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+La troisième raison est que sur un ordinateur multiprocesseur, chaque processeur peut réordonner les accès à la mémoire automatiquement afin d'en optimiser les performances [McKenney2005]_.
+Cela a comme conséquence que certaines lectures et écritures en mémoires peuvent se faire dans un autre ordre que celui indiqué dans le programme sur certaines architectures de processeurs.
+Si dans l'algorithme de Peterson le thread ``A`` lit la valeur de ``flag[B]`` alors que l'écriture en mémoire pour ``flag[A]`` n'a pas encore été effectuée, une violation de la section critique est possible.
+En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle ``while`` avant que la mise à jour de leur drapeau n'aie été faite effectivement en mémoire.
 
-Sur les ordinateurs actuels, il devient difficile d'utiliser l'algorithme de Peterson tel qu'il a été décrit et ce pour deux raisons. Tout d'abord, les compilateurs C sont capables d'optimiser le code qu'ils génèrent. Pour cela, ils analysent le programme à compiler et peuvent supprimer des instructions qui leur semblent être inutiles. Dans le cas de l'algorithme de Peterson, le compilateur pourrait très bien considérer que la boucle ``while`` est inutile puisque les variables ``turn`` et ``flag`` ont été initialisées juste avant d'entrer dans la boucle.
+.. note:: Pourquoi ``volatile`` n'est pas suffisant
 
-La deuxième raison est que sur un ordinateur multiprocesseur, chaque processeur peut réordonner les accès à la mémoire automatiquement afin d'en optimiser les performances [McKenney2005]_. Cela a comme conséquence que certaines lectures et écritures en mémoires peuvent se faire dans un autre ordre que celui indiqué dans le programme sur certaines architectures de processeurs. Si dans l'algorithme de Peterson le thread ``A`` lit la valeur de ``flag[B]`` alors que l'écriture en mémoire pour ``flag[A]`` n'a pas encore été effectuée, une violation de la section critique est possible. En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle ``while`` avant que la mise à jour de leur drapeau n'aie été faite effectivement en mémoire.
+ On notera que l'utilisation du mot clé ``volatile`` ne peut pas résoudre ces problèmes liés au réordonnancement des instructions par le compilateur ou le processeur.
+ Le mot clé ``volatile`` permet d'assurer que l'accès à une variable partagé se fera toujours par une opération ``mov`` depuis l'adresse mémoire la contenant, et pas via un registre contenant la copie d'une lecture précédente.
+ Il ne garantit pas, toutefois, que cet accès mémoire ne sera pas ré-ordonné par le processeur pour des raisons de performance.
+ Un accès à une variable ``volatile`` peut tout à fait avoir lieu après un autre accès mémoire, ce dernier figurant pourtant avant l'accès à la variable partagée dans le programme.
+ Il est possible de forcer le processeur à terminer les instructions d'accès à la mémoire en cours, avant de pouvoir en exécuter d'autres, désactivant de fait les optimisations utilisant le ré-ordonnancement des instructions.
+ Cela requiert d'utiliser des opérations de barrières mémoires (memory fences) en plus de la déclaration comme ``volatile`` de la variable partagé.
+ L'instruction  ``MFENCE`` ordonne ainsi au processeur de terminer les opérations mémoires en cours, tandis que ``LFENCE``, ``SFENCE`` permettent de terminer les opérations de lecture ou d'écriture, respectivement.
+ L'utilisation correcte des barrières mémoires est très complexe en pratique.
+ Elle est donc réservée pour du code de très bas niveau, par exemple dans les couches du noyau les plus proches du matériel.
 
-Pour résoudre ce problème, les architectes de microprocesseurs ont proposé l'utilisation d'opérations atomiques. Une :term:`opération atomique` est une opération qui lorsqu'elle est exécutée sur un processeur ne peut pas être interrompue par l'arrivée d'une interruption. Ces opérations permettent généralement de manipuler en même temps un registre et une adresse en mémoire. En plus de leur caractère ininterruptible, l'exécution de ces instructions atomiques par un ou plusieurs processeur implique une coordination des processeurs pour l'accès à la zone mémoire référencée dans l'instruction. Via un mécanisme qui sort du cadre de ces notes, tous les accès à la mémoire faits par ces instructions sont ordonnés par les processeurs de façon à ce qu'ils soient toujours réalisés séquentiellement.
+La nécessité de fournir des primitives de synchronisation (entre autres, d'exclusion mutuelle) génériques et efficaces a amené les fabricants de processeurs à enrichir les jeux d'instructions avec des opérations spécifiques.
+Ces instructions mettent en œuvre des opérations atomiques.
+Une :term:`opération atomique` est une opération qui, lorsqu'elle est exécutée sur un processeur, ne peut pas être interrompue par l'arrivée d'une interruption.
+Ces opérations permettent généralement de manipuler en même temps un registre et une adresse en mémoire.
+En plus de leur caractère ininterruptible, l'exécution de ces instructions atomiques par un ou plusieurs processeur implique une coordination des processeurs pour l'accès à la zone mémoire référencée dans l'instruction. 
+Tous les accès à la mémoire faits par ces instructions sont ordonnés par les processeurs de façon à ce qu'ils soient toujours visibles par tous les processeurs dans le même ordre (e.g. si un processeur A voit les opérations atomiques op1, op2, op3 dans cet ordre, alors c'est le cas de tous les autres processeurs, ce qui n'est pas nécessairement le cas pour les accès mémoires traditionnels).
 
-Plusieurs types d'instructions atomiques sont supportés par différentes architectures de processeurs. A titre d'exemple, considérons l'instruction atomique ``xchg`` qui est supportée par les processeurs [IA32]_. Cette instruction permet d'échanger, de façon atomique, le contenu d'un registre avec une zone de la mémoire. Elle prend deux arguments, un registre et une adresse en mémoire. Ainsi, l'instruction ``xchgl %eax,(var)`` est équivalente aux trois instructions suivantes, en supposant le registre ``%ebx`` initialement vide. La première sauvegarde dans ``%ebx`` le contenu de la mémoire à l'adresse ``var``. La deuxième copie le contenu du registre ``%eax`` à cette adresse mémoire et la dernière transfère le contenu de ``%ebx`` dans ``%eax`` de façon à terminer l'échange de valeurs.
+Plusieurs types d'instructions atomiques sont supportés par différentes architectures de processeurs.
+A titre d'exemple, considérons l'instruction atomique ``xchg`` qui est supportée par les processeurs [IA32]_. 
+Cette instruction permet d'échanger, de façon atomique, le contenu d'un registre avec une zone de la mémoire.
+Elle prend deux arguments, un registre et une adresse en mémoire.
+Ainsi, l'instruction ``xchgl %eax,(var)`` est équivalente aux trois instructions suivantes, en supposant le registre ``%ebx`` initialement vide.
+La première instruction sauvegarde dans ``%ebx`` le contenu de la mémoire à l'adresse ``var``.
+La deuxième instruction copie le contenu du registre ``%eax`` à cette adresse mémoire et la dernière instruction transfère le contenu de ``%ebx`` dans ``%eax`` de façon à terminer l'échange de valeurs.
 
 .. code-block:: nasm
 
@@ -472,33 +501,186 @@ Plusieurs types d'instructions atomiques sont supportés par différentes archit
    movl %eax, (var)
    movl %ebx, %eax
 
-Avec cette instruction atomique, il est possible de résoudre le problème de l'exclusion mutuelle en utilisant une zone mémoire, baptisée ``lock`` dans l'exemple. Cette zone mémoire contiendra la valeur ``1`` ou ``0``. Cette zone mémoire est initialisée à ``0``. Lorsqu'un thread veut accéder à sa section critique, il exécute les instructions à partir de l'étiquette ``enter:``. Pour sortir de section critique, il suffit d'exécuter les instructions à partir de l'étiquette ``leave:``.
+Avec cette instruction atomique, il est possible de résoudre le problème de l'exclusion mutuelle en utilisant une zone mémoire, baptisée ``lock`` dans l'exemple.
+Cette zone mémoire contiendra la valeur ``1`` ou ``0``.
+Elle est initialisée à ``0``.
+Lorsqu'un thread veut accéder à sa section critique, il exécute les instructions à partir de l'étiquette ``enter:``.
+Pour sortir de section critique, il suffit d'exécuter les instructions à partir de l'étiquette ``leave:``.
 
 .. code-block:: nasm
 
   lock:                    ; étiquette, variable
-    .long    0          ; initialisée à 0
+    .long    0             ; initialisée à 0
 
   enter:
      movl    $1, %eax      ; %eax=1
      xchgl   %eax, (lock)  ; instruction atomique, échange (lock) et %eax
                            ; après exécution, %eax contient la donnée qui était
-               ; dans lock et lock la valeur 1
+                           ; dans lock et lock la valeur 1
      testl   %eax, %eax    ; met le flag ZF à vrai si %eax contient 0
      jnz     enter         ; retour à enter: si ZF n'est pas vrai
      ret
 
   leave:
-     mov     $0, %eax      ; %eax=0
+     movl    $0, %eax     ; %eax=0
      xchgl   %eax, (lock)  ; instruction atomique
      ret
 
-Pour bien comprendre le fonctionnement de cette solution, il faut analyser les instructions qui composent chaque routine en assembleur. La routine ``leave`` est la plus simple. Elle place la valeur ``0`` à l'adresse ``lock``. Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fait séquentiellement. Lorsque ``lock`` vaut ``0``, cela indique qu'aucun thread ne se trouve en section critique. Si ``lock`` contient la valeur ``1``, cela indique qu'un thread est actuellement dans sa section critique et qu'aucun autre thread ne peut y entrer. Pour entrer en section critique, un thread doit d'abord exécuter la routine ``enter``. Cette routine initialise d'abord le registre ``%eax`` à la valeur ``1``. Ensuite, l'instruction ``xchgl`` est utilisée pour échanger le contenu de ``%eax`` avec la zone mémoire ``lock``. Après l'exécution de cette instruction atomique, l'adresse ``lock`` contiendra nécessairement la valeur ``1``. Par contre, le registre ``%eax`` contiendra la valeur qui se trouvait à l'adresse ``lock`` avant l'exécution de ``xchgl``. C'est en testant cette valeur que le thread pourra déterminer si il peut entrer en section critique ou non. Deux cas sont possibles :
+Pour bien comprendre le fonctionnement de cette solution, il faut analyser les instructions qui composent chaque routine en assembleur.
+La routine ``leave`` est la plus simple.
+Elle place la valeur ``0`` à l'adresse ``lock``.
+Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fait séquentiellement [#barriere_possible]_..
+Lorsque ``lock`` vaut ``0``, cela indique qu'aucun thread ne se trouve en section critique.
+Si ``lock`` contient la valeur ``1``, cela indique qu'un thread est actuellement dans sa section critique et qu'aucun autre thread ne peut y entrer.
 
- a. ``%eax==0`` après exécution de l'instruction ``xchgl  %eax, (lock)``. Dans ce cas, le thread peut accéder à sa section critique. En effet, cela indique qu'avant l'exécution de cette instruction l'adresse ``lock`` contenait la valeur ``0``. Cette valeur indique que la section critique était libre avant l'exécution de l'instruction ``xchgl  %eax, (lock)``. En outre, cette instruction a placé la valeur ``1`` à l'adresse ``lock``, ce qui indique qu'un thread exécute actuellement sa section critique. Si un autre thread exécute l'instruction ``xchgl  %eax, (lock)`` à cet instant, il récupèrera la valeur ``1`` dans ``%eax`` et ne pourra donc pas entre en section critique. Si deux threads exécutent simultanément et sur des processeurs différents l'instruction ``xchgl  %eax, (lock)``, la coordination des accès mémoires entre les processeurs garantit que ces accès mémoires seront séquentiels. Le thread qui bénéficiera du premier accès à la mémoire sera celui qui récupèrera la valeur ``0`` dans ``%eax`` et pourra entrer dans sa section critique. Le ou les autres threads récupéreront la valeur ``1`` dans ``%eax`` et boucleront.
+Pour entrer en section critique, un thread doit d'abord exécuter la routine ``enter``.
+Cette routine initialise d'abord le registre ``%eax`` à la valeur ``1``.
+Ensuite, l'instruction ``xchgl`` est utilisée pour échanger le contenu de ``%eax`` avec la zone mémoire ``lock``. 
+Après l'exécution de cette instruction atomique, l'adresse ``lock`` contiendra nécessairement la valeur ``1``.
+Par contre, le registre ``%eax`` contiendra la valeur qui se trouvait à l'adresse ``lock`` avant l'exécution de ``xchgl``.
+C'est en testant cette valeur que le thread pourra déterminer si il peut entrer en section critique ou non. Deux cas sont possibles :
+
+ a. ``%eax==0`` après exécution de l'instruction ``xchgl  %eax, (lock)``. Dans ce cas, le thread peut accéder à sa section critique. En effet, cela indique qu'avant l'exécution de cette instruction l'adresse ``lock`` contenait la valeur ``0``. Cette valeur indique que la section critique était libre avant l'exécution de l'instruction ``xchgl  %eax, (lock)``. En outre, cette instruction a placé la valeur ``1`` à l'adresse ``lock``, ce qui indique qu'un thread exécute actuellement sa section critique. Si un autre thread exécute l'instruction ``xchgl  %eax, (lock)`` à cet instant, il récupèrera la valeur ``1`` dans ``%eax`` et ne pourra donc pas entrer en section critique. Si deux threads exécutent simultanément et sur des processeurs différents l'instruction ``xchgl  %eax, (lock)``, la coordination des accès mémoires entre les processeurs garantit que ces accès mémoires seront séquentiels (l'un précédera l'autre). Le thread qui bénéficiera du premier accès à la mémoire sera celui qui récupèrera la valeur ``0`` dans ``%eax`` et pourra entrer dans sa section critique. Le ou les autres threads récupéreront la valeur ``1`` dans ``%eax``.
  b. ``%eax==1`` après exécution de l'instruction ``xchgl %eax, (lock)``. Dans ce cas, le thread ne peut entrer en section critique et il entame une boucle active durant laquelle il va continuellement exécuter la boucle ``enter: movl ... jnz enter``.
 
+Verrous par attente active (spinlocks)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+L'ensemble des algorithmes d'exclusion mutuelle que nous avons vu dans ce chapitre utilisent le principe de l'attente *active*.
+On les appelle des *spinlocks* en anglais, car un thread en attente pour entrer dans sa section critique boucle (*spin*) sur la vérification d'une condition.
+Par exemple, dans l'algorithme Bakery un thread boucle sur le parcours des deux tableaux partagés.
+Dans l'algorithme utilisant l'opération atomique ``xchgl`` ci-dessus, un thread bouclera sur la suite d'instruction entre l'adresse ``enter`` et l'instruction ``jnz``.
+L'exclusion mutuelle par attente active est mis en œuvre seulement en mode utilisateur.
+Elle ne nécessite pas de support spécifique du système d'exploitation.
+
+Les mutex et les sémaphores POSIX que nous avons vu dans les chapitres précédents sont eux, au contraire, mis en œuvre avec le concours du système d'exploitation.
+Un thread qui tente d'acquérir un sémaphore non disponible appèle la fonction ``wait()`` de la librairie.
+Comme le sémaphore n'est pas disponible, ceci générera une interruption qui passe le contrôle au système d'exploitation.
+Celui-ci passera le statut de ce thread en mode Blocked, en l'ajoutant à une file d'attente liée à ce mutex.
+Lorsqu'un autre thread appelle ``post()`` sur ce même sémaphore, un thread de la file d'attente est mis en mode Ready, mais n'obtient pas nécessairement immédiatement un processeur.
+C'est le scheduler qui décidera de placer plus tard ce thread sur un processeur (mode Running).
+
+Les mutex et sémaphores POSIX sont toujours avantageux dans un contexte mono-processeur : il n'y a pas d'utilité pour un thread sur un seul processeur de boucler sur l'attente d'une condition qui ne peut se réaliser que si un autre thread obtient le processeur à sa place.
+Autant redonner la main immédiatement au système d'exploitation et attendre que la condition soit réalisée pour être de nouveau placé en état Ready.
+Leur autre avantage, que ce soit dans un système mono ou multi-processeur, est que les threads ne perdent pas de temps et de ressources processeur à effectuer leur attente active.
+Comme la gestion des files de threads en attente est du ressort du système d'exploitation, celui-ci peut prendre des décisions de meilleure qualité quand le scheduler choisit quel thread associer à un processeur : les threads en attente ne sont pas considérés, contrairement à une attente active où le scheduler ne peut pas savoir quel thread a une chance d'obtenir le verrou ou non (cf. encart plus haut dans ce chapitre).
+
+Toutefois, les mutex et sémaphores POSIX mis en œuvre avec le concours du noyau ont un désavantage important qui est la latence de leurs opérations.
+Cette latence est due à plusieurs facteurs :
+(1) la combinaison entre le surcoût de la mise en attente (état Blocked) d'un thread appelant ``lock()`` sur un mutex, dans une file gérée par le noyau, 
+(2) le temps qui s'écoule entre le moment où ce thread sera placé en état Ready (par un appel à ``unlock()``) et celui où il sera de nouveau placé par le scheduler sur un processeur, et 
+(3) le coût des différents changements de contexte au cours de cette procédure.
+Le temps total pour ces opérations peut être plus long que la durée de la section critique du thread qui détenait le mutex.
+Dans ce cas, il peut être plus pertinent d'effectuer une attente active courte en attenant la fin de cette section critique.
+L'attente active est ainsi souvent privilégiée au niveau de l'implémentation du noyau lui même, et dans la mise en œuvre des structures de données (tables de hachage, arbres, graphes, etc.) utilisées de façon concurrente par plusieurs threads.
+
+Attente active et performance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Bien que la mise en œuvre de l'attente active avec l'instruction atomique ``xchgl`` soit correcte (i.e. elle préserve la propriété d'exclusivité mutuelle) et qu'elle ne présente pas les défauts des algorithmes historiques fondés sur des lectures et écritures vus précédemment, elle n'est pourtant pas vraiment satisfaisante.
+
+En effet, on constate rapidement que son utilisation entraîne une dégradation des performances, même pour synchroniser l'accès à quelques sections critiques dans un programme (comme par exemple l'accès à une structure de donnée globale partagée).
+Cette dégradation intervient à la fois pour la performance de l'accès aux sections critiques elles-même (augmentation significative de la latence) mais aussi, ce qui est encore plus ennuyeux, pour les autres threads du même programme effectuant des opérations hors de leur section critique, et même pour les autres applications présentes sur la même machine.
+Pour comprendre la raison de ces dégradations, nous devons revenir sur le concept de cache et en particulier sur la gestion de la cohérence de ces caches dans un système multi-processeur.
+
+L'utilisation de caches est fondamentale pour la performance : elle permet de masquer la latence d'accès de la mémoire principale.
+Dans un système multi-processeur, chaque processeur (ou chaque cœur) possède son propre cache, qui conserve les données fréquemment accédées par ce processeur.
+La valeur stockée à une adresse donnée peut être mise à jour dans le cache d'un processeur, avant d'être propagée plus tard vers la mémoire principale (write-back).
+Une même adresse peut être présente dans le cache de *plusieurs* processeurs.
+Il est donc nécessaire de synchroniser les caches des différents processeurs pour éviter que deux processeurs puissent écrire de façon concurrente à la même adresse en mémoire.
+C'est le rôle d'un protocole de cohérence de caches.
+
+Il existe de nombreux protocoles de cohérence de cache mais nous nous contenterons de présenter le plus simple d'entre eux, le protocole MSI.
+Chaque processeur est connecté à un bus, auquel est aussi connecté la mémoire principale.
+Chaque contrôleur de cache (attaché à chaque processeur), ainsi que la mémoire principale, écoute ce bus en permanence.
+Un seul processeur peut envoyer un message à un moment donné sur le bus, et tous les messages sont vus par tous les processeurs (et la mémoire).
+La figure suivante présente un exemple avec 4 mots mémoires : A, B, C et D et 4 processeurs avec un cache de 4 entrées.
+
+ .. figure:: figures/cache_bus.png
+    :align: center
+    :scale: 20
+
+Une entrée d'un cache peut prendre trois états possibles, M, S, ou I :
+
+- Une entrée dans l'état **M** (Modified) contient une valeur qui est plus récente que celle dans la mémoire principale, et seul ce processeur a une copie de cette entrée. Dans certaines architectures, cet état est aussi appelé **E** (Exclusive).
+- Une entrée dans l'état **S** (Shared) est partagée entre plusieurs caches, et la valeur stockée dans les différents caches est la même.
+- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer 
+
+Avant de passer une entrée en état M, il est nécessaire d'invalider les entrées pour la même adresse dans les caches des autres processeurs.
+Par exemple, considérons que le processeur 1 possède l'adresse B dans son cache, ce qui est le cas des processeurs 2 et 3.
+Ces entrées sont initialement en mode S.
+Avant de pouvoir écrire dans son cache, le processeur 1 doit d'abord invalider les entrées correspondantes dans les caches des autres processeurs.
+À cet effet, le processeur 1 envoie un message ``inv B`` (invalider l'entrée B) sur le bus.
+Ce message est intercepté par les contrôleurs des cache ayant une copie de B, en l'occurence ceux des processeurs 2 et 3, et leur copie est déclarée comme invalide (I).
+
+Le bus est aussi utilisé par les contrôleurs de cache pour écrire les données vers la mémoire, mais aussi pour répondre aux requêtes de lecture des autres processeurs.
+Si le processeur 4 émet un message pour lire la valeur à l'adresse C dans notre exemple, c'est le contrôleur de cache du processeur 1 qui répondra plutôt que la mémoire principale.
+
+Si deux threads sur deux processeurs différents écrivent de façon répétée à la même adresse mémoire, il y a un risque qu'ils invalident en permanence les entrées de cache de leurs processeurs respectifs.
+Imaginons qu'un thread sur le processeur 2 modifie A très souvent, et qu'un autre thread sur le processeur 4 modifie aussi A très souvent.
+Les deux processeurs vont passer leur temps à attendre que les entrées de leur cache respectifs soient invalidées.
+Cela va générer un nombre important de messages sur le bus (dont la capacité est bien entendu limitée).
+On appelle ce phénomène l'effet *ping-pong* [#faux_partage]_.
+
+Instructions atomiques et utilisation du bus
+""""""""""""""""""""""""""""""""""""""""""""
+
+Les instructions atomiques comme ``xchgl`` impliquant une adresse mémoire doivent non seulement obtenir l'accès en mode M à ce mot mémoire dans leur cache, mais aussi bloquer l'accès au bus par les autres processeurs pour empêcher son invalidation par un autre processeur pendant l'exécution de l'instruction atomique.
+Ce blocage du bus a un impact important sur la performance de l'ensemble des threads en cours d'exécution : les accès mémoire sont bloqués pour tous les processeurs en attendant que l'opération atomique sur un de ces processeurs soit terminée.
+
+Le coût du blocage du bus explique la performance décevante du code présenté précédemment, où chaque thread souhaitant accéder à sa section critique utilise une succession d'opérations ``xchgl`` continue.
+La situation est créée est illustrée par la figure ci-dessous.
+
+ .. figure:: figures/cmp_swap_bus.png
+    :align: center
+    :scale: 20
+
+Trois des processeurs (CPU1, 2 et 3) hébergent des threads souhaitant accéder à leur section critique, en essayant d'échanger leur valeur avec l'adresse mémoire A.
+Le thread sur le CPU1 a accès à l'adresse mémoire en mode M dans son cache et verrouille l'utilisation du bus.
+Pendant ce temps, les opérations ``xchgl`` des threads sur les processeurs 2 et 3 sont bloqués en attendant la disponibilité du bus.
+Par ailleurs, le thread du processeur 4, indépendant des threads souhaitant accéder à leur section critique, voit ses opérations d'accès à la mémoire temporairement bloqué elles aussi.
+Une fois que le thread du processeur 1 aura gagné l'accès à sa section critique, il sera lui aussi sujet à un ralentissement car ses accès mémoire seront en concurrence avec les opérations ``xchgl`` continues des threads des processeurs 2 et 3.
+Le retard pris dans la section critique est, au final, au désavantage de ces derniers : avec les opérations atomiques en continu, ils retardent leur propre accès à leur section critique !
+
+Une solution simple pour pallier ce problème est de tirer parti du cache.
+Tant que la valeur du verrou est à 1, on sait qu'un thread est dans sa section critique et il est inutile de tenter continuellement d'effectuer l'opération ``xchgl`` : celle ci ralentit le progrès de tous les threads et renverra toujours 1, entrainant une nouvelle boucle.
+À la place, il est préférable de cacher la valeur du verrou dans le cache, et de la lire continuellement tant que celle ci vaut 1.
+Cette situation est illustrée par la figure suivante.
+
+ .. figure:: figures/cmp_swap_bus_ttas.png
+    :align: center
+    :scale: 20
+
+On appelle souvent cette solution le test-and-test-and-test, par opposition à la version de l'algorithme précédent qui est appelé test-and-set.
+L'idée est de ne tenter l'opération atomique ``xchgl``, qui teste et assigne (set) la valeur de façon atomique, que lorsque le verrou semble libre.
+Cette situation apparait lorsque le thread qui effectuait sa section critique écrit 0 dans le verrou : l'adresse devient en état M dans son cache après invalidation dans le cache des autres processeurs, qui lisent alors 0 grace à une requête sur le bus.
+Le pseudocode de cette opération peut être :
+
+.. code-block:: c
+
+   while (test_and_set(verrou, 1)) {
+     // on a pas obtenu le verrou car on a lu 1
+     // donc on attend de lire 0 pour tenter à nouveau
+     while (verrou) {}
+   }
+
+Le test-and-test-and-set limite fortement la contention sur le but pendant l'exécution de la section critique du thread possédant le verrou.
+Elle n'est toutefois pas parfaite quand il y a un grand nombre de threads qui souhaitent accéder à leur section critique de façon répétée : à chaque fois qu'un de ces threads quitte sa section critique, l'invalidation de l'adresse du verrou dans les caches de tous les autres processeurs entraine une rafale de lecture de la nouvelle valeur, suivi d'une rafale d'opérations ``xchgl``.
+De toutes ces opérations, une seule sera couronnée de succès, mais toutes devront bloquer le bus et limiter le progrès général du système.
+Le caractère synchrone et répété de ces pics d'occupation du bus peut réduire la performance générale du système, sans toutefois le faire autant que le test-and-set seul.
+
+On peut encore améliorer cette solution en constatant qu'un thread qui lit la valeur 1 pour le verrou est probablement dans une situation de contention et peut se mettre en attente pour un moment avant de réessayer.
+On appelle cette attente un back-off en anglais, que l'on peut traduire par une mise en retrait.
+Un thread souhaitant entrer dans sa section critique mais observant la valeur 1 pour le verrou va effectuer une attente avant de réessayer.
+L'avantage de cette approche est qu'elle permet de s'adapter à la contention, et qu'elle permet de désynchroniser les demandes des différents threads, évitant ainsi les pics de requêtes de la solution test-and-test-and-set :
+
+- Le premier avantage, l'adaptation à la contention, est obtenu en augmentant le temps d'attente à chaque essai infructueux. La première attente est typiquement assez courte, la deuxième est deux fois plus longue, la troisième quatre fois, etc. tout en bornant bien entendu l'attente à un maximum.
+- Le deuxième avantage, l'évitement des pics de requêtes, est obtenu en ajoutant une part d'aléatoire dans le choix du délai d'attente. Le délai d'attente effectif est une portion aléatoire du temps maximal d'attente à chaque essai. Par exemple, si le délai minimal est de 10ns, alors la première attente pourrait être de 6ns, la deuxième (entre 0 et 20ns), de 17ns, et ainsi de suite.
+
+La définition du pseudo-code de ce dernier algorithme, que l'on peut appeler backoff-test-and-test-and-set, est laissé en exercice.
 
 .. todo:: inversion de priorité ?
 
-En pratique, rares sont les programmes qui coordonnent leurs threads en utilisant des instructions atomiques ou l'algorithme de Peterson. Ces programmes profitent généralement des fonctions de coordination qui sont implémentées dans des librairies du système d'exploitation.
+.. [#barriere_possible] En réalité, l'utilisation d'une opération atomique n'est pas strictement nécessaire ici, car on aurait pu utiliser deux barrières mémoires, une avant et une après l'écriture de 0 à l'adresse (lock) avec une instruction ``mov``. L'utilisation d'une instruction atomique a l'avantage de la simplicité.
+
+.. [#faux_partage] Il existe aussi un autre phénomène ping-pong qui est du au problème du faux partage : comme les lignes de cache ont une granularité qui est plus grande (par exemple 64 octets) que celle de la plupart des variables utilisées (int, long, etc.), deux variables utilisées par deux threads différents peuvent se retrouver sur la même ligne de cache. L'accès par l'un des threads invalidera la ligne de cache complète sur l'autre processeur, grevant les performances sans qu'il y ait de de données réellement partagées.
