@@ -604,7 +604,7 @@ Une entrée d'un cache peut prendre trois états possibles, M, S, ou I :
 
 - Une entrée dans l'état **M** (Modified) contient une valeur qui est plus récente que celle dans la mémoire principale, et seul ce processeur a une copie de cette entrée. Dans certaines architectures, cet état est aussi appelé **E** (Exclusive).
 - Une entrée dans l'état **S** (Shared) est partagée entre plusieurs caches, et la valeur stockée dans les différents caches est la même.
-- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer le dernière valeure associée à cette entrée depuis le bus.
+- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer la dernière valeur associée à cette entrée.
 
 Avant de passer une entrée en état M, il est nécessaire d'invalider les entrées pour la même adresse dans les caches des autres processeurs.
 Par exemple, considérons que le processeur 1 possède l'adresse B dans son cache, ce qui est le cas des processeurs 2 et 3.
