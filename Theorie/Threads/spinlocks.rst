@@ -391,8 +391,8 @@ Il n'est pas nécessaire de changer la valeur stockée dans ``ticket[]`` pour ce
    ticket[i]=t+1;
    
    // Section waiting : attendre son tour ...
-   int mon_tour = 1;
    do {
+     int mon_tour = 1;
      // Parcours des tickets des autres threads dont le drapeau est levé
      for (int j=0; j<N; j++) {
        if (drapeau[j]) {
