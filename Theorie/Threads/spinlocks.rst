@@ -317,7 +317,7 @@ Le filtre fait donc N-1=2 niveaux.
     :align: center
     :scale: 20
 
-On suppose the le thread T3 est déjà dans sa section critique et que les threads T1 et T2 veulent aussi accéder à leur section critique.
+On suppose que le thread T3 est déjà dans sa section critique et que les threads T1 et T2 veulent aussi accéder à leur section critique.
 L'entrée dans le filtre pour T1 précède strictement l'entrée de T2.
 Au premier niveau, on voit que T1 se déclare comme la victime est reste bloqué.
 L'arrivée de T2 fait que ce dernier se déclare comme victime à ce niveau à la place de T1.
@@ -326,7 +326,7 @@ Lorsque T3 termine sa section critique, la condition ``t_niv_sup_egal`` pour T2 
 Ainsi, on observe que T2 a pu accéder à sa section critique avant T1 bien que l'accès au filtre ait été fait après celui-ci.
  
 La garantie d'équité pour l'accès à la section critique n'est pas toujours nécessaire et elle n'est pas toujours désirable d'un point de vue des performances.
-Par exemple, on voit ici que le progrès du thread T2 aurait du être stoppé pour permettre d'attendre que le thread T1 se voit alloué un processeur par le scheduler, afin de progresser et d'exécuter sa section critique.
+Par exemple, on voit ici que le progrès du thread T2 aurait dû être stoppé pour permettre d'attendre que le thread T1 se voie allouer un processeur par le scheduler, afin de progresser et d'exécuter sa section critique.
 Cette attente peut être significativement plus longue que le temps nécessaire à T2 pour terminer de parcourir les niveaux du filtre et exécuter sa propre section critique.
 
 Algorithme de la boulangerie (Bakery) de Lamport
@@ -475,7 +475,7 @@ En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle 
  Il ne garantit pas, toutefois, que cet accès mémoire ne sera pas ré-ordonné par le processeur pour des raisons de performance.
  Un accès à une variable ``volatile`` peut tout à fait avoir lieu après un autre accès mémoire, ce dernier figurant pourtant avant l'accès à la variable partagée dans le programme.
  Il est possible de forcer le processeur à terminer les instructions d'accès à la mémoire en cours, avant de pouvoir en exécuter d'autres, désactivant de fait les optimisations utilisant le ré-ordonnancement des instructions.
- Cela requiert d'utiliser des opérations de barrières mémoires (memory fences) en plus de la déclaration comme ``volatile`` de la variable partagé.
+ Cela requiert d'utiliser des opérations de barrières mémoires (memory fences) en plus de la déclaration comme ``volatile`` de la variable partagée.
  L'instruction  ``MFENCE`` ordonne ainsi au processeur de terminer les opérations mémoires en cours, tandis que ``LFENCE``, ``SFENCE`` permettent de terminer les opérations de lecture ou d'écriture, respectivement.
  L'utilisation correcte des barrières mémoires est très complexe en pratique.
  Elle est donc réservée pour du code de très bas niveau, par exemple dans les couches du noyau les plus proches du matériel.
@@ -547,10 +547,10 @@ Verrous par attente active (spinlocks)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 L'ensemble des algorithmes d'exclusion mutuelle que nous avons vu dans ce chapitre utilisent le principe de l'attente *active*.
-On les appelle des *spinlocks* en anglais, car un thread en attente pour entrer dans sa section critique boucle (*spin*) sur la vérification d'une condition.
+On les appelle des *spinlocks* en anglais, car un thread en attente, pour entrer dans sa section critique, boucle (*spin*) sur la vérification d'une condition.
 Par exemple, dans l'algorithme Bakery un thread boucle sur le parcours des deux tableaux partagés.
 Dans l'algorithme utilisant l'opération atomique ``xchgl`` ci-dessus, un thread bouclera sur la suite d'instruction entre l'adresse ``enter`` et l'instruction ``jnz``.
-L'exclusion mutuelle par attente active est mis en œuvre seulement en mode utilisateur.
+L'exclusion mutuelle par attente active est mise en œuvre seulement en mode utilisateur.
 Elle ne nécessite pas de support spécifique du système d'exploitation.
 
 Les mutex et les sémaphores POSIX que nous avons vu dans les chapitres précédents sont eux, au contraire, mis en œuvre avec le concours du système d'exploitation.
@@ -604,7 +604,7 @@ Une entrée d'un cache peut prendre trois états possibles, M, S, ou I :
 
 - Une entrée dans l'état **M** (Modified) contient une valeur qui est plus récente que celle dans la mémoire principale, et seul ce processeur a une copie de cette entrée. Dans certaines architectures, cet état est aussi appelé **E** (Exclusive).
 - Une entrée dans l'état **S** (Shared) est partagée entre plusieurs caches, et la valeur stockée dans les différents caches est la même.
-- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer 
+- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer le dernière valeure associée à cette entrée depuis le bus.
 
 Avant de passer une entrée en état M, il est nécessaire d'invalider les entrées pour la même adresse dans les caches des autres processeurs.
 Par exemple, considérons que le processeur 1 possède l'adresse B dans son cache, ce qui est le cas des processeurs 2 et 3.
@@ -637,8 +637,8 @@ La situation est créée est illustrée par la figure ci-dessous.
 
 Trois des processeurs (CPU1, 2 et 3) hébergent des threads souhaitant accéder à leur section critique, en essayant d'échanger leur valeur avec l'adresse mémoire A.
 Le thread sur le CPU1 a accès à l'adresse mémoire en mode M dans son cache et verrouille l'utilisation du bus.
-Pendant ce temps, les opérations ``xchgl`` des threads sur les processeurs 2 et 3 sont bloqués en attendant la disponibilité du bus.
-Par ailleurs, le thread du processeur 4, indépendant des threads souhaitant accéder à leur section critique, voit ses opérations d'accès à la mémoire temporairement bloqué elles aussi.
+Pendant ce temps, les opérations ``xchgl`` des threads sur les processeurs 2 et 3 sont bloquées en attendant la disponibilité du bus.
+Par ailleurs, le thread du processeur 4, indépendant des threads souhaitant accéder à leur section critique, voit ses opérations d'accès à la mémoire temporairement bloquées elles aussi.
 Une fois que le thread du processeur 1 aura gagné l'accès à sa section critique, il sera lui aussi sujet à un ralentissement car ses accès mémoire seront en concurrence avec les opérations ``xchgl`` continues des threads des processeurs 2 et 3.
 Le retard pris dans la section critique est, au final, au désavantage de ces derniers : avec les opérations atomiques en continu, ils retardent leur propre accès à leur section critique !
 
@@ -683,4 +683,4 @@ La définition du pseudo-code de ce dernier algorithme, que l'on peut appeler ba
 
 .. [#barriere_possible] En réalité, l'utilisation d'une opération atomique n'est pas strictement nécessaire ici, car on aurait pu utiliser deux barrières mémoires, une avant et une après l'écriture de 0 à l'adresse (lock) avec une instruction ``mov``. L'utilisation d'une instruction atomique a l'avantage de la simplicité.
 
-.. [#faux_partage] Il existe aussi un autre phénomène ping-pong qui est du au problème du faux partage : comme les lignes de cache ont une granularité qui est plus grande (par exemple 64 octets) que celle de la plupart des variables utilisées (int, long, etc.), deux variables utilisées par deux threads différents peuvent se retrouver sur la même ligne de cache. L'accès par l'un des threads invalidera la ligne de cache complète sur l'autre processeur, grevant les performances sans qu'il y ait de de données réellement partagées.
+.. [#faux_partage] Il existe aussi un autre phénomène ping-pong qui est dû au problème du faux partage : comme les lignes de cache ont une granularité qui est plus grande (par exemple 64 octets) que celle de la plupart des variables utilisées (int, long, etc.), deux variables utilisées par deux threads différents peuvent se retrouver sur la même ligne de cache. L'accès par l'un des threads invalidera la ligne de cache complète sur l'autre processeur, grevant les performances sans qu'il y ait de de données réellement partagées.
