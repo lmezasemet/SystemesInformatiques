@@ -55,7 +55,7 @@ Plusieurs d'entre elles sont analysées en détails dans [Alagarsamy2003]_.
 Dans cette section, nous nous concentrerons sur une de ces solutions, proposée par G. Peterson en 1981 [Peterson1981]_.
 Cette solution permet à plusieurs threads de coordonner leur exécution de façon à éviter une violation de section critique en utilisant uniquement des variables accessibles à tous les threads.
 Nous verrons tout d'abord des solutions pour coordonner l'accès à leur section critique pour deux threads.
-.. La solution proposée par Peterson permet de gérer `N` threads [Peterson1981]_ mais nous nous limiterons à sa version permettant de coordonner deux threads.
+La solution proposée par Peterson permet de gérer `N` threads [Peterson1981]_ mais nous nous limiterons à sa version permettant de coordonner deux threads.
 
 Une première solution permettant de coordonner deux threads en utilisant des variables partagées pourrait être de s'appuyer sur une variable qui permet de déterminer quel est le thread qui peut entrer en section critique.
 Dans l'implémentation ci-dessous, la variable partagée ``turn`` est utilisée par les deux threads et permet de coordonner leur exécution.
@@ -87,13 +87,13 @@ Puisqu'il est sorti de sa boucle ``while``, cela implique que la variable ``turn
 Sinon, le premier thread serait toujours en train d'exécuter sa boucle ``while``.
 Examinons maintenant le fonctionnement du second thread.
 Pour entrer dans sa section critique, celui-ci va exécuter la boucle ``while (turn != 1){ }``.
-A ce moment, ``turn`` a la valeur ``0``.
+À ce moment, ``turn`` a la valeur ``0``.
 La boucle dans le second thread va donc s'exécuter en permanence.
 Elle ne s'arrêtera que si la valeur de ``turn`` change.
 Or, le premier thread ne pourra changer la valeur de ``turn`` que lorsqu'il aura quitté sa section critique.
 Cette solution évite donc toute violation de la section critique.
 Malheureusement, elle ne fonctionne que si il y a une alternance stricte entre les deux threads.
-Le second s'exécute après le premier qui lui même s'exécute après le second, ... Cette alternance n'est évidemment pas acceptable.
+Le second s'exécute après le premier qui lui-même s'exécute après le second, ... Cette alternance n'est évidemment pas acceptable.
 
 Analysons une seconde solution.
 Celle-ci utilise un tableau ``flag`` contenant deux drapeaux, un par thread.
@@ -169,7 +169,7 @@ Celui-ci exécute ``flag[B]=true;`` puis démarre sa boucle ``while``.
 Vu le contenu du drapeau ``flag[A]``, celle-ci va s'exécuter en permanence.
 Après quelque temps, le scheduler repasse la main au thread ``A`` qui va lui aussi entamer sa boucle ``while``. 
 Comme ``flag[B]`` a été mis à ``true`` par le thread ``B``, le thread ``A`` entame également sa boucle ``while``.
-A partir de cet instant, les deux threads vont exécuter leur boucle ``while`` qui protège l'accès à la section critique.
+À partir de cet instant, les deux threads vont exécuter leur boucle ``while`` qui protège l'accès à la section critique.
 Malheureusement, comme chaque thread exécute sa boucle ``while`` aucun des threads ne va modifier son drapeau de façon à permettre à l'autre thread de sortir de sa boucle.
 Cette situation perdurera indéfiniment.
 Dans la littérature, cette situation est baptisée un :term:`livelock`.
@@ -572,7 +572,7 @@ Cette latence est due à plusieurs facteurs :
 (3) le coût des différents changements de contexte au cours de cette procédure.
 Le temps total pour ces opérations peut être plus long que la durée de la section critique du thread qui détenait le mutex.
 Dans ce cas, il peut être plus pertinent d'effectuer une attente active courte en attenant la fin de cette section critique.
-L'attente active est ainsi souvent privilégiée au niveau de l'implémentation du noyau lui même, et dans la mise en œuvre des structures de données (tables de hachage, arbres, graphes, etc.) utilisées de façon concurrente par plusieurs threads.
+L'attente active est ainsi souvent privilégiée au niveau de l'implémentation du noyau lui-même, et dans la mise en œuvre des structures de données (tables de hachage, arbres, graphes, etc.) utilisées de façon concurrente par plusieurs threads.
 
 Attente active et performance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -643,17 +643,17 @@ Une fois que le thread du processeur 1 aura gagné l'accès à sa section critiq
 Le retard pris dans la section critique est, au final, au désavantage de ces derniers : avec les opérations atomiques en continu, ils retardent leur propre accès à leur section critique !
 
 Une solution simple pour pallier ce problème est de tirer parti du cache.
-Tant que la valeur du verrou est à 1, on sait qu'un thread est dans sa section critique et il est inutile de tenter continuellement d'effectuer l'opération ``xchgl`` : celle ci ralentit le progrès de tous les threads et renverra toujours 1, entrainant une nouvelle boucle.
-À la place, il est préférable de cacher la valeur du verrou dans le cache, et de la lire continuellement tant que celle ci vaut 1.
+Tant que la valeur du verrou est à 1, on sait qu'un thread est dans sa section critique et il est inutile de tenter continuellement d'effectuer l'opération ``xchgl`` : celle-ci ralentit le progrès de tous les threads et renverra toujours 1, entrainant une nouvelle boucle.
+À la place, il est préférable de cacher la valeur du verrou dans le cache, et de la lire continuellement tant que celle-ci vaut 1.
 Cette situation est illustrée par la figure suivante.
 
  .. figure:: figures/cmp_swap_bus_ttas.png
     :align: center
     :scale: 20
 
-On appelle souvent cette solution le test-and-test-and-test, par opposition à la version de l'algorithme précédent qui est appelé test-and-set.
+On appelle souvent cette solution le test-and-test-and-set, par opposition à la version de l'algorithme précédent qui est appelé test-and-set.
 L'idée est de ne tenter l'opération atomique ``xchgl``, qui teste et assigne (set) la valeur de façon atomique, que lorsque le verrou semble libre.
-Cette situation apparait lorsque le thread qui effectuait sa section critique écrit 0 dans le verrou : l'adresse devient en état M dans son cache après invalidation dans le cache des autres processeurs, qui lisent alors 0 grace à une requête sur le bus.
+Cette situation apparait lorsque le thread qui effectuait sa section critique écrit 0 dans le verrou : l'adresse devient en état M dans son cache après invalidation dans le cache des autres processeurs, qui lisent alors 0 grâce à une requête sur le bus.
 Le pseudocode de cette opération peut être :
 
 .. code-block:: c
