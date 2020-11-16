@@ -319,15 +319,18 @@ Le filtre fait donc N-1=2 niveaux.
 
 On suppose que le thread T3 est déjà dans sa section critique et que les threads T1 et T2 veulent aussi accéder à leur section critique.
 L'entrée dans le filtre pour T1 précède strictement l'entrée de T2.
-Au premier niveau, on voit que T1 se déclare comme la victime est reste bloqué.
-L'arrivée de T2 fait que ce dernier se déclare comme victime à ce niveau à la place de T1.
+On voit que T1 se déclare comme la victime et reste bloqué au premier niveau (1).
+L'arrivée de T2 fait que ce dernier se déclare comme victime au niveau 1 à la place de T1 (2).
 T1 pourrait alors accéder au niveau 2, mais entre temps le thread est passé dans l'état Ready, i.e. le scheduler lui a dé-alloué le processeur qu'il occupait.
-Lorsque T3 termine sa section critique, la condition ``t_niv_sup_egal`` pour T2 passe à 0 (false) même si celui-ci était la victime au niveau 1, et il peut donc progresser au niveau 2, puis dans sa section critique.
+Lorsque T3 termine sa section critique (3), T2 ne peut pas progresser car il est toujours bloqué au niveau 1 : sa condition ``t_niv_sup_egal`` est toujours vrai car T1 est présent au niveau 1 (et ce bien que T1 ne puisse pourtant pas s'exécuter et passer au niveau 2 tant que celui-ci n'a pas accès à un processeur).
+Considérons ensuite que T3 souhaite de nouveau accéder à sa section critique.
+T3 entre au niveau 1 et s'y déclare comme la victime (4).
+T2 peut ainsi passer au niveau 2, puis entrer dans sa section critique (5).
 Ainsi, on observe que T2 a pu accéder à sa section critique avant T1 bien que l'accès au filtre ait été fait après celui-ci.
  
 La garantie d'équité pour l'accès à la section critique n'est pas toujours nécessaire et elle n'est pas toujours désirable d'un point de vue des performances.
-Par exemple, on voit ici que le progrès du thread T2 aurait dû être stoppé pour permettre d'attendre que le thread T1 se voie allouer un processeur par le scheduler, afin de progresser et d'exécuter sa section critique.
-Cette attente peut être significativement plus longue que le temps nécessaire à T2 pour terminer de parcourir les niveaux du filtre et exécuter sa propre section critique.
+Ici, pour respecter l'ordre d'arrivée, il aurait été nécessaire de bloquer non seulement T2 mais aussi T3 tant que T1 n'a pas accès à un processeur pour exécuter sa section critique.
+Cette attente peut être significativement plus longue que le temps nécessaire à T2 et T4 pour parcourir les niveaux du filtre et exécuter plusieurs fois leur sections critiques.
 
 Algorithme de la boulangerie (Bakery) de Lamport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
