@@ -73,6 +73,14 @@ Systèmes Multiprocesseurs
    Threads/processus
    Threads/spinlocks
 
+Ordonnancement (scheduling)
+***************************
+
+.. toctree::
+   :maxdepth: 2
+
+   Ordonnancement/scheduling
+
 Mémoire virtuelle
 *****************
 
@@ -89,14 +97,6 @@ Fichiers
 
    Fichiers/fichiers
    Fichiers/fichiers-signaux
-
-Ordonnancement (scheduling)
-***************************
-
-.. toctree::
-   :maxdepth: 2
-
-   Ordonnancement/scheduling
 
 *******
 Annexes
