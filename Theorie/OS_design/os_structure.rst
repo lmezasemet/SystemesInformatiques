@@ -402,7 +402,7 @@ Mac OS ainsi qu'iOS d'Apple sont des systèmes hybrides, combinant des fonctionn
  Certaines études [Chou2001]_ [Palix2011]_ montrent ainsi que certains bugs ne sont corrigés que plusieurs années après leur première identification !
  
  L'utilisation d'un micro-noyau peut réduire drastiquement la quantité de lignes de code à analyser et à débogguer, mais cela n'est pas toujours suffisant.
- Récemment, des concepteurs de systèmes d'exploitation spécialisés pour les applications critiques ont entrepris de certifier de façon formelle la qualité des leurs systèmes.
+ Récemment, des concepteurs de systèmes d'exploitation spécialisés pour les applications critiques ont entrepris de certifier de façon formelle la qualité de leurs systèmes.
  Ce processus nécessite de spécifier les fonctionnalités du système d'exploitation, comme par exemple la totale isolation entre les espaces mémoires accessibles au différents processus, à l'aide d'un formalisme mathématique.
  Des logiciels spécialisés permettent ensuite de valider une mise en œuvre (en C) du système d'exploitation par rapport à cette spécification formelle de haut niveau.
  Cette opération est très complexe et coûteuse en ressources de calcul.

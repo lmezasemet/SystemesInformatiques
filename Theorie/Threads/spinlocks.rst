@@ -279,8 +279,8 @@ Le code ci-dessous représente l'algorithme suivi par le thread *i*.
      victim[L] = i;
      // Attendre tant qu'il existe au moins un thread au même niveau ou à un niveau supérieur, 
      // et que le thread i est la victime du niveau où il se trouve
-     int t_niv_sup_egal = 0;
      do {
+       int t_niv_sup_egal = 0;
        for (int j=0; j< N; j++) {
          // parcours du tableau des niveaux pour déterminer si un thread 
          // est au même niveau ou à un niveau supérieur
