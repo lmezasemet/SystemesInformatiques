@@ -1,5 +1,5 @@
 .. -*- coding: utf-8 -*-
-.. Copyright |copy| 2012, 2019 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Christoph Paasch et Grégory Detal
+.. Copyright |copy| 2012, 2020 by `Olivier Bonaventure <http://perso.uclouvain.be/olivier.bonaventure>`_, Etienne Rivière, Christoph Paasch, Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
 .. _utilisateurs:
@@ -31,7 +31,7 @@ Les systèmes Unix supportent différents mécanismes d'authentification. Le plu
    inode
    inodes
    
-Lorsqu'un utilisateur se connecte sur un système Unix, il fournit son nom d'utilisateur ou `username`. Ce nom d'utilisateur est une chaîne de caractères qui est facile à mémoriser par l'utilisateur. D'un point de vue implémentation, un système d'exploitation préfère manipuler des nombres plutôt que des chaînes de caractères. Unix associe à chaque utilisateur un identifiant qui est stocké sous la forme d'un nombre entier positif. La table de correspondance entre l'identifiant d'utilisateur et le nom d'utilisateur est le fichier `/etc/passwd`. Ce fichier texte, comme la grande majorité des fichiers de configuration d'un système Unix, comprend pour chaque utilisateur l'information suivante :
+Lorsqu'un utilisateur se connecte sur un système Unix, il fournit son nom d'utilisateur ou `username`. Ce nom d'utilisateur est une chaîne de caractères qui est facile à mémoriser par l'utilisateur. D'un point de vue de mise en œuvre, un système d'exploitation préfère manipuler des valeurs numériques plutôt que des chaînes de caractères. Unix associe à chaque utilisateur un identifiant qui est stocké sous la forme d'un nombre entier positif. La table de correspondance entre l'identifiant d'utilisateur et le nom d'utilisateur est le fichier `/etc/passwd`. Ce fichier texte, comme la grande majorité des fichiers de configuration d'un système Unix, comprend pour chaque utilisateur l'information suivante :
 
  - nom d'utilisateur (`username`)
  - mot de passe (sur les anciennes versions de Unix)
@@ -63,7 +63,7 @@ En pratique, il est parfois utile d'associer des droits d'accès à des groupes 
 Systèmes de fichiers
 ====================
 
-Outre un processeur et une mémoire, la plupart des ordinateurs actuels sont en général équipés d'un ou plusieurs dispositifs de stockage. Les dispositifs les plus courants sont le disque dur, le lecteur de CD/DVD, la clé USB, la carte mémoire, ... Ces dispositifs de stockage ont des caractéristiques techniques très différentes. Certains stockent l'information sous forme magnétique, d'autres sous forme électrique ou en creusant via un laser des trous dans un support physique. D'un point de vue logique, ils offrent tous une interface très similaire au système d'exploitation qui veut les utiliser.
+Outre un processeur et une mémoire, la plupart des ordinateurs actuels sont équipés d'un ou plusieurs dispositifs de stockage. Les dispositifs les plus courants sont le disque dur ou le SSD, le lecteur de DVD-ROM, les clés USB et cartes mémoire, ... Ces dispositifs de stockage ont des caractéristiques techniques très différentes. Certains stockent l'information sous forme magnétique, d'autres sous forme électrique ou en creusant en utilisant un laser des trous dans un support physique. D'un point de vue logique, ils offrent pourtant tous une interface très similaire au système d'exploitation qui veut les utiliser.
 
 Dans un système de fichiers Unix, l'ensemble des répertoires et fichiers est organisé sous la forme d'un arbre. La racine de cet arbre est le répertoire ``/``. Il est localisé sur un des dispositifs de stockage du système. Le système de fichiers Unix permet d'intégrer facilement des systèmes de fichiers qui se trouvent sur différents dispositifs de stockage. Cette opération est en général réalisée par l'administrateur système en utilisant la commande `mount(8)`_. A titre d'exemple, voici quelques répertoires qui sont montés sur un système Linux.
 
@@ -108,12 +108,34 @@ Les méta-données qui sont associées à chaque fichier ou répertoire contienn
 
  - ``r`` : autorisation de lecture
  - ``w`` : autorisation d'écriture ou de modification
- - ``x`` : autorisation d'exécution
+ - ``x`` : autorisation d'exécution (fichiers) ou de parcours (répertoires)
 
 Ces bits de permissions sont regroupés en trois blocs. Le premier bloc correspond aux bits de permission qui sont applicables pour les accès qui sont effectués par un processus qui appartient à l'utilisateur qui est propriétaire du fichier/répertoire. Le deuxième bloc correspond aux bits de permission qui sont applicables pour les opérations effectuées par un processus dont l'identifiant de groupe est identique à l'identifiant de groupe du fichier/répertoire mais n'appartient pas à l'utilisateur qui est propriétaire du fichier/répertoire. Le dernier bloc est applicable pour les opérations effectuées par des processus qui appartiennent à d'autres utilisateurs.
 
 Les valeurs de ces bits sont représentés pas les symboles ``rwx`` dans l'output de la commande `ls(1)`_. Les bits de permission peuvent être modifiés en utilisant la commande `chmod(1)`_ qui utilise l'appel système `chmod(2)`_. Pour qu'un exécutable puisse être exécuté via l'appel système `execve(2)`_, il est nécessaire que le fichier correspondant possède les bits de permission ``r`` et ``x``.
 
+La signification du bit ``x`` est différente pour les répertoires et pour les fichiers.
+Ce bit indique qu'un fichier peut être utilisé par l'appel système `execve(2)`_ pour amorcer l'exécution d'un programme.
+Pour un répertoire, le bit ``x`` donne le droit de parcours, c'est à dire le droit d'accéder des fichiers ou sous-répertoires présents dans ce répertoire.
+L'opération de lister le contenu d'un répertoire (avec la commande `ls(1)`_ par exemple) nécessite le droit ``r``, comme le montre l'exemple suivant.
+
+.. code-block:: console
+
+ $ mkdir -p repertoire
+ $ echo "LINFO1252" > repertoire/fichier
+ $ chmod 000 repertoire/
+ $ ls -al repertoire/
+ ls: cannot open directory repertoire/: Permission denied
+ $ cat repertoire/fichier
+ cat: repertoire/fichier: Permission denied
+ $ chmod +x repertoire/
+ $ ls -al repertoire/
+ ls: cannot open directory repertoire/: Permission denied
+ $ cat repertoire/fichier
+ LINFO1252
+
+
+Pour un répertoire, il indique que le répertoire peut être listé (par exemple, en utilisant )
 
 .. note:: Manipulation des bits de permission avec `chmod(2)`_
 
@@ -136,7 +158,7 @@ Les valeurs de ces bits sont représentés pas les symboles ``rwx`` dans l'outpu
 
  Ces bits de permissions sont généralement spécifiés soit sous la forme d'une disjonction logique ou sous forme numérique. A titre d'exemple, un fichier qui peut être lu et écrit uniquement par son propriétaire aura comme permissions ``00600`` ou ``S_IRUSR|S_IWUSR``.
 
- Le :term:`nibble` de poids fort des bits de permission sert à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (04000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
+ Les bits de permission de bits de poids fort servent à encoder des permissions particulières relatives aux fichiers et répertoires. Par exemple, lorsque la permission ``S_ISUID (04000)`` est associée à un exécutable, elle indique que celui-ci doit s'exécuter avec les permissions du propriétaire de l'exécutable et pas les permissions de l'utilisateur. Cette permission spéciale est utilisée par des programmes comme `passwd(1)`_ qui doivent disposer des permissions de l'administrateur système pour s'exécuter correctement (`passwd(1)`_ doit modifier le fichier `passwd(5)`_ qui appartient à l'administrateur système).
 
 
 Les exemples ci-dessous présentent le contenu partiel d'un répertoire.
@@ -196,7 +218,7 @@ Les fonctions de manipulation des répertoires méritent que l'on s'y attarde un
 	   l'inode
 	   métadonnée
 	   
-Cette structure comprend le numéro de l'inode, c'est-à-dire la métadonnée qui contient les informations relatives au fichier/répertoire, la position de l'entrée ``dirent`` qui suite, la longueur de l'entrée, son type et le nom de l'entrée dans le répertoire. Chaque appel à `readdir(3)`_ retourne un pointeur vers une structure de ce type.
+Cette structure comprend le numéro de l'inode, c'est-à-dire la métadonnée qui contient les informations relatives au fichier/répertoire, la position de l'entrée ``dirent`` qui suit, la longueur de l'entrée, son type et le nom de l'entrée dans le répertoire. Chaque appel à `readdir(3)`_ retourne un pointeur vers une structure de ce type.
 
 
 L'extrait de code ci-dessous permet de lister tous les fichiers présents dans le répertoire ``name``.
@@ -208,22 +230,19 @@ L'extrait de code ci-dessous permet de lister tous les fichiers présents dans l
    :start-after: ///AAA
    :end-before: ///BBB
 
-		
-		
 La lecture d'un répertoire avec `readdir(3)`_ commence au début de ce répertoire. A chaque appel à `readdir(3)`_, le programme appelant récupère un pointeur vers une zone mémoire contenant une structure ``dirent`` avec l'entrée suivante du répertoire ou ``NULL`` lorsque la fin du répertoire est atteinte. Si une fonction doit relire à nouveau un répertoire, cela peut se faire en utilisant `seekdir(3)`_ ou `rewinddir(3)`_.
 
 
 .. note:: `readdir(3)`_ et les threads
 
-   La fonction `readdir(3)`_ est un exemple de fonction non-réentrante qu'il faut éviter d'utiliser dans une application dont plusieurs threads doivent pouvoir parcourir le même répertoire. Ce problème est causé par l'utilisation d'une zone de mémoire ``static`` afin de stocker la structure dont le pointeur est retourné par `readdir(3)`_. Dans une application utilisant plusieurs threads, il faut utiliser la fonction `readdir_r(3)`_ :
-
-	  .. code-block:: c
-
-	     int  readdir_r(DIR *restrict dirp, struct dirent *restrict entry,
-		            struct dirent **restrict result);
-
-
-	  Cette fonction prend comme arguments le pointeur ``entry`` vers un buffer propre à l'appelant qui permet de stocker le résultat de `readdir_r(3)`_.
+ La fonction `readdir(3)`_ est un exemple de fonction non-réentrante qu'il faut éviter d'utiliser dans une application dont plusieurs threads doivent pouvoir parcourir le même répertoire. Ce problème est causé par l'utilisation d'une zone de mémoire ``static`` afin de stocker la structure dont le pointeur est retourné par `readdir(3)`_. Dans une application utilisant plusieurs threads, il faut utiliser la fonction `readdir_r(3)`_ :
+ 
+ .. code-block:: c
+ 
+    int  readdir_r(DIR *restrict dirp, struct dirent *restrict entry,
+             struct dirent **restrict result);
+ 
+ Cette fonction prend comme arguments le pointeur ``entry`` vers un buffer propre à l'appelant qui permet de stocker le résultat de `readdir_r(3)`_.
 
 
 Les appels systèmes `link(2)`_ et `unlink(2)`_ sont un peu particuliers et méritent une description plus détaillée. Sous Unix, un :term:`inode` est associé à chaque fichier mais l':term:`inode` ne contient pas le nom de fichier parmi les méta-données qu'il stocke. Par contre, chaque :term:`inode` contient un compteur (``nlinks``) du nombre de liens vers un fichier. Cela permet d'avoir une seule copie d'un fichier qui est accessible depuis plusieurs répertoires. Pour comprendre cette utilisation des liens sur un système de fichiers Unix, considérons le scénario suivant.
@@ -270,15 +289,53 @@ Les appels systèmes `link(2)`_ et `unlink(2)`_ sont un peu particuliers et mér
 	   total 8
 	   9624126 -rw-r--r--  1 obo  stafinfo  16 24 mar 21:15 test3.txt
 
-	Dans ce scénario, deux répertoires sont créés avec la commande `mkdir(1)`_. Ensuite, la commande `echo(1)`_ est utilisée pour créer le fichier ``test.txt`` contenant la chaîne de caractères ``test`` dans le répertoire ``a``. Ce fichier est associé à l':term:`inode` ``9624126``. La commande `ln(1)`_ permet de rendre ce fichier accessible sous un autre nom depuis le même répertoire. La sortie produite par la commande `ls(1)`_ indique que ces deux fichiers qui sont présents dans le répertoire ``a`` ont tous les deux le même ``inode``. Ils correspondent donc aux mêmes données sur le disque. A ce moment, le compteur ``nlinks`` de l':term:`inode` ``9624126`` a la valeur ``2``. La commande `ln(1)`_ peut être utilisée pour créer un lien vers un fichier qui se trouve dans un autre répertoire [#flns]_ comme le montre la création du fichier ``test3.txt`` dans le répertoire ``b``. Ces trois fichiers correspondant au même :term:`inode`, toute modification à l'un des fichiers affecte et est visible dans n'importe lequel des liens vers ce fichier. C'est ce que l'on voit lorsque la commande ``echo "complement" >> b/test3.txt`` est exécutée. Cette commande affecte immédiatement les trois fichiers. La commande ``rm a/test2.txt`` efface la référence du fichier sous le nom ``a/test2.txt``, mais les deux autres liens restent accessibles. Le fichier ne sera réellement effacé qu'après que le dernier lien vers l':term:`inode` correspondant aie été supprimé. La commande `rm(1)`_ utilise en pratique l'appel système `unlink(2)`_ qui en toute généralité décrémente le compteur de liens de l'inode correspondant au fichier et l'efface lorsque ce compteur atteint la valeur ``0``.
+Dans ce scénario, deux répertoires sont créés avec la commande `mkdir(1)`_. Ensuite, la commande `echo(1)`_ est utilisée pour créer le fichier ``test.txt`` contenant la chaîne de caractères ``test`` dans le répertoire ``a``. Ce fichier est associé à l':term:`inode` ``9624126``. La commande `ln(1)`_ permet de rendre ce fichier accessible sous un autre nom depuis le même répertoire. La sortie produite par la commande `ls(1)`_ indique que ces deux fichiers qui sont présents dans le répertoire ``a`` ont tous les deux le même ``inode``. Ils correspondent donc aux mêmes données sur le disque. A ce moment, le compteur ``nlinks`` de l':term:`inode` ``9624126`` a la valeur ``2``. La commande `ln(1)`_ peut être utilisée pour créer un lien vers un fichier qui se trouve dans un autre répertoire [#flns]_ comme le montre la création du fichier ``test3.txt`` dans le répertoire ``b``. Ces trois fichiers correspondant au même :term:`inode`, toute modification à l'un des fichiers affecte et est visible dans n'importe lequel des liens vers ce fichier. C'est ce que l'on voit lorsque la commande ``echo "complement" >> b/test3.txt`` est exécutée. Cette commande affecte immédiatement les trois fichiers. La commande ``rm a/test2.txt`` efface la référence du fichier sous le nom ``a/test2.txt``, mais les deux autres liens restent accessibles. Le fichier ne sera réellement effacé qu'après que le dernier lien vers l':term:`inode` correspondant aie été supprimé. La commande `rm(1)`_ utilise en pratique l'appel système `unlink(2)`_ qui en toute généralité décrémente le compteur de liens de l'inode correspondant au fichier et l'efface lorsque ce compteur atteint la valeur ``0``.
 
-	Une description détaillée du fonctionnement de ces appels systèmes et fonctions de la librairie standard peut se trouver dans les livres de référence sur la programmation en C sous Unix [Kerrisk2010]_, [Mitchell+2001]_, [StevensRago2008]_.
+Une description détaillée du fonctionnement de ces appels systèmes et fonctions de la librairie standard peut se trouver dans les livres de référence sur la programmation en C sous Unix [Kerrisk2010]_, [Mitchell+2001]_, [StevensRago2008]_.
 
+.. note:: Liens symboliques
+
+ Les liens créés dans l'exemple précédent avec la commande `ln(1)`_ sont des liens dits *durs*, permettant à un même fichier d'avoir plusieurs identités (noms dans la hiérarchie du système de fichier).
+ 
+ Il est quelquefois souhaitable de ne conserver qu'un seul lien dur entre un nom de fichier *f* et les données, et d'utiliser des liens symboliques vers ce nom de fichier *f* plutôt qu'un lien direct vers ces données.
+ Contrairement à un lien dur, le lien symbolique n'a pas besoin d'être nécessairement au sein du même système de fichiers.
+ Un lien symbolique contient le nom du fichier lié, et permet donc une redirection pour accéder à ce dernier.
+ Le désavantage d'un lien symbolique est que si le fichier lié est renommé ou effacé alors les données ne sont plus accessibles.
+ 
+ On peut créer un lien symbolique en utilisant l'option ``-s`` de la commande `ln(1)`_ comme le montre l'exemple suivant.
+
+ .. code-block:: console
+   
+   $ ls -l
+   -rw-rw-r-- 1 utilisateur groupe 28 Dec  2 16:00 test1.txt
+   $ cat test1.txt 
+   Contenu du fichier de test.
+   $ ln test1.txt lien_dur.txt
+   $ ls -l
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 lien_dur.txt
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 test1.txt
+   $ ln -s test1.txt lien_symb.txt
+   $ ls -l
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 lien_dur.txt
+   lrwxrwxrwx 1 utilisateur groupe  9 Dec  2 16:01 lien_symb.txt -> test1.txt
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 test1.txt
+   $ mv test1.txt test_1.txt 
+   $ ls -l
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 lien_dur.txt
+   lrwxrwxrwx 1 utilisateur groupe  9 Dec  2 16:01 lien_symb.txt -> test1.txt
+   -rw-rw-r-- 2 utilisateur groupe 28 Dec  2 16:00 test_1.txt
+   $ cat lien_symb.txt 
+   cat: lien_symb.txt: No such file or directory
+   $ cat lien_dur.txt 
+   Contenu du fichier de test.
 
 Utilisation des fichiers
 ------------------------
 
-Si quelques processus manipulent le système de fichiers et parcourent les répertoires, les processus qui utilisent des données sauvegardées dans des fichiers sont encore plus nombreux. Un système Unix offre deux possibilités d'écrire et de lire dans un fichier. La première utilise directement les appels systèmes `open(2)`_, `read(2)`_/ `write(2)`_ et `close(2)`_. La seconde s'appuie sur les fonctions `fopen(3)`_, `fread(3)`_/ `fwrite(3)`_ et `fclose(3)`_ de la librairie `stdio(3)`_. Seuls les appels systèmes sont traités dans ce cours. Des détails complémentaires sur les fonctions de la libraire peuvent être obtenus dans [Kerrisk2010]_, [Mitchell+2001]_ ou [StevensRago2008]_.
+Si quelques processus manipulent le système de fichiers et parcourent les répertoires, les processus qui utilisent des données sauvegardées dans des fichiers sont encore plus nombreux. 
+En plus du mapping des fichiers en mémoire que nous avons abordé précédemment dans le syllabus, un système Unix offre deux possibilités pour écrire et lire des données dans un fichier.
+La première utilise directement les appels systèmes `open(2)`_, `read(2)`_/ `write(2)`_ et `close(2)`_.
+La seconde s'appuie sur les fonctions `fopen(3)`_, `fread(3)`_/ `fwrite(3)`_ et `fclose(3)`_ de la librairie `stdio(3)`_. Seuls les appels systèmes seront traités dans ce cours. Des détails complémentaires sur les fonctions de la libraire peuvent être obtenus dans [Kerrisk2010]_, [Mitchell+2001]_ ou [StevensRago2008]_.
 
 Du point de vue des appels systèmes de manipulation des fichiers, un fichier est une séquence d'octets. Avant qu'un processus ne puisse écrire ou lire dans un fichier, il doit d'abord demander au système d'exploitation l'autorisation d'accéder au fichier. Cela se fait en utilisant l'appel système `open(2)`_.
 
@@ -361,8 +418,6 @@ Lors de son exécution, ce programme affiche la sortie ci-dessous.
    :encoding: utf-8
    :language: console
 
-
-
 Si il est bien possible de sauvegarder dans un fichier des entiers, des nombres en virgule flottante voire même des structures, il faut être bien conscient que l'appel système `write(2)`_ se contente de sauvegarder sur le disque le contenu de la zone mémoire pointée par le pointeur qu'il a reçu comme second argument. Si comme dans l'exemple précédent c'est le même processus qui lit les données qu'il a écrit, il pourra toujours récupérer les données correctement.
 
 Par contre, lorsqu'un fichier est écrit sur un ordinateur, envoyé via Internet et lu sur un autre ordinateur, il peut se produire plusieurs problèmes dont il faut être conscient. Le premier problème est que deux ordinateurs différents n'utilisent pas nécessairement le même nombre d'octets pour représenter chaque type de données. Ainsi, sur un ordinateur équipé d'un ancien processeur [IA32]_, les entiers sont représentés sur 32 bits (i.e. 4 bytes) alors que sur les processeurs plus récents ils sont souvent représentés sur 64 bits (i.e. 8 bytes). Cela implique qu'un tableau de 100 entiers en 32 bits sera interprété comme un tableau de 50 entiers en 64 bits.
@@ -444,61 +499,64 @@ Cet appel système prend trois arguments. Le premier est le :term:`descripteur d
 Fichiers mappés en mémoire
 --------------------------
 
-Lorsqu'un processus Unix veut lire ou écrire des données dans un fichier, il utilise en général les appels systèmes `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_ directement ou à travers une librairie de plus haut niveau comme la libraire d'entrées/sorties standard. Ce n'est pas la seule façon pour accéder à des données sur un dispositif de stockage. Grâce à la mémoire virtuelle, il est possible de placer le contenu d'un fichier ou d'une partie de fichier dans une zone de la mémoire du processus. Cette opération peut être effectuée en utilisant l'appel système `mmap(2)`_. Cet appel système permet de rendre un fichier accessibles directement dans la mémoire du processus. 
+L'utilisation de fichiers mappés en mémoire avec l'appel système `mmap(2)`_ est une alternative à l'utilisation des appels `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_.
+Ce sujet est détaillé dans le chapitre précédent de ce syllabus, dédié à l'utilisation de la mémoire virtuelle.
 
-
-
-.. code-block:: c
-
-   #include <sys/mman.h>
-
-   void *mmap(void *addr, size_t length, int prot, int flags,
-              int fd, off_t offset);
-
-
-L'appel système `mmap(2)`_ prend six arguments, c'est un des appels systèmes qui utilise le plus d'arguments. Il permet de rendre accessible une portion d'un fichier via la mémoire d'un processus. Le cinquième argument est le descripteur du fichier qui doit être mappé. Celui-ci doit avoir été préalablement ouvert avec l'appel système `open(2)`_. Le sixième argument spécifie l'offset à partir duquel le fichier doit être mappé, ``0`` correspondant au début du fichier. Le premier argument est l'adresse à laquelle la première page du fichier doit être mappée. Généralement, cet argument est mis à ``NULL`` de façon à laisser le noyau choisir l'adresse la plus appropriée. Le deuxième argument est la longueur de la zone du fichier qui doit être mappée en mémoire. Le troisième argument contient des drapeaux qui spécifient les permissions d'accès aux données mappées. Cet argument peut soit être ``PROT_NONE``, ce qui indique que la page est inaccessible soit une permission classique :
-
- - ``PROT_EXEC``, les pages mappées contiennent des instructions qui peuvent être exécutées
- - ``PROT_READ``, les pages mappées contiennent des données qui peuvent être lues
- - ``PROT_WRITE``, les pages mappées contiennent des données qui peuvent être modifiées
-
-Ces drapeaux peuvent être combinés avec une disjonction logique. Le quatrième argument est un drapeau qui indique comment les pages doivent être mappées en mémoire. Ce drapeau spécifie comment un fichier qui est mappé par deux ou plusieurs processus doit être traité. Deux drapeaux sont possibles :
-
- - ``MAP_PRIVATE``. Dans ce cas, le fichier est mappé dans chaque processus, mais si un processus modifie une page, cette modification n'est pas répercutée aux autres processus qui ont mappé le même fichier.
- - ``MAP_SHARED``. Dans ce cas, plusieurs processus peuvent accéder et modifier la page qui est mappée en mémoire. Lorsqu'un processus modifie le contenu d'une page, la modification est visible aux autres processus. Par contre, le fichier qui est mappé en mémoire n'est modifié que lorsque le noyau du système d'exploitation décide d'écrire les données modifiées sur le dispositif de stockage. Ces écritures dépendent de nombreux facteurs, dont la charge du système. Si un processus veut être sûr des écritures sur disque des modifications qu'il a fait à un fichier mappé un mémoire, il doit exécuter l'appel système `msync(2)`_ ou supprimer le mapping via `munmap(2)`_.
-
-.. spelling::
-
-   mapping
-   
-Ces deux drapeaux peuvent dans certains cas particuliers être combinés avec d'autres drapeaux définis dans la page de manuel de `mmap(2)`_.
-
-Lorsque `mmap(2)`_ réussit, il retourne l'adresse du début de la zone mappée en mémoire. En cas d'erreur, la constante ``MAP_FAILED`` est retournée et ``errno`` est mis à jour en conséquence.
-
-L'appel système `msync(2)`_ permet de forcer l'écriture sur disque d'une zone mappée en mémoire. Le premier argument est l'adresse du début de la zone qui doit être écrite sur disque. Le deuxième argument est la longueur de la zone qui doit être écrite sur le disque. Enfin, le dernier contient un drapeau qui spécifie comment les pages correspondantes doivent être écrites sur le disque. Le drapeau ``MS_SYNC`` indique que l'appel `msync(2)`_ doit bloquer tant que les données n'ont pas été écrites. Le drapeau ``MS_ASYNC`` indique au noyau que l'écriture doit être démarrée, mais l'appel système peut se terminer avant que toutes les pages modifiées aient été écrites sur disque.
-
-.. code-block:: c
-
-   #include <sys/mman.h>
-   int msync(void *addr, size_t length, int flags);
-
-
-Lorsqu'un processus a fini d'utiliser un fichier mappé en mémoire, il doit d'abord supprimer le mapping en utilisant l'appel système `munmap(2)`_. Cet appel système prend deux arguments. Le premier doit être un multiple de la taille d'une page [#ftaillepage]_. Le second est la taille de la zone pour laquelle le mapping doit être retiré.
-
-.. code-block:: c
-
-   #include <sys/mman.h>
-
-   int munmap(void *addr, size_t length);
-
-
-A titre d'exemple d'utilisation de `mmap(2)`_ et `munmap(2)`_, le programme ci-dessous implémente l'équivalent de la commande `cp(1)`_. Il prend comme arguments deux noms de fichiers et copie le contenu du premier dans le second. La copie se fait en mappant le premier fichier entièrement en mémoire et en utilisant la fonction `memcpy(3)`_ pour réaliser la copie. Cette solution fonctionne avec de petits fichiers. Avec de gros fichiers, elle n'est pas très efficace car tout le fichier doit être mappé en mémoire.
-
-.. literalinclude:: /MemoireVirtuelle/src/cp2.c
-   :encoding: utf-8
-   :language: c
-   :start-after: ///AAA
-
+.. Lorsqu'un processus Unix veut lire ou écrire des données dans un fichier, il utilise en général les appels systèmes `open(2)`_, `read(2)`_, `write(2)`_ et `close(2)`_ directement ou à travers une librairie de plus haut niveau comme la libraire d'entrées/sorties standard. Ce n'est pas la seule façon pour accéder à des données sur un dispositif de stockage. Grâce à la mémoire virtuelle, il est possible de placer le contenu d'un fichier ou d'une partie de fichier dans une zone de la mémoire du processus. Cette opération peut être effectuée en utilisant l'appel système `mmap(2)`_. Cet appel système permet de rendre un fichier accessibles directement dans la mémoire du processus.
+..
+..
+..
+.. .. code-block:: c
+..
+..    #include <sys/mman.h>
+..
+..    void *mmap(void *addr, size_t length, int prot, int flags,
+..               int fd, off_t offset);
+..
+..
+.. L'appel système `mmap(2)`_ prend six arguments, c'est un des appels systèmes qui utilise le plus d'arguments. Il permet de rendre accessible une portion d'un fichier via la mémoire d'un processus. Le cinquième argument est le descripteur du fichier qui doit être mappé. Celui-ci doit avoir été préalablement ouvert avec l'appel système `open(2)`_. Le sixième argument spécifie l'offset à partir duquel le fichier doit être mappé, ``0`` correspondant au début du fichier. Le premier argument est l'adresse à laquelle la première page du fichier doit être mappée. Généralement, cet argument est mis à ``NULL`` de façon à laisser le noyau choisir l'adresse la plus appropriée. Le deuxième argument est la longueur de la zone du fichier qui doit être mappée en mémoire. Le troisième argument contient des drapeaux qui spécifient les permissions d'accès aux données mappées. Cet argument peut soit être ``PROT_NONE``, ce qui indique que la page est inaccessible soit une permission classique :
+..
+..  - ``PROT_EXEC``, les pages mappées contiennent des instructions qui peuvent être exécutées
+..  - ``PROT_READ``, les pages mappées contiennent des données qui peuvent être lues
+..  - ``PROT_WRITE``, les pages mappées contiennent des données qui peuvent être modifiées
+..
+.. Ces drapeaux peuvent être combinés avec une disjonction logique. Le quatrième argument est un drapeau qui indique comment les pages doivent être mappées en mémoire. Ce drapeau spécifie comment un fichier qui est mappé par deux ou plusieurs processus doit être traité. Deux drapeaux sont possibles :
+..
+..  - ``MAP_PRIVATE``. Dans ce cas, le fichier est mappé dans chaque processus, mais si un processus modifie une page, cette modification n'est pas répercutée aux autres processus qui ont mappé le même fichier.
+..  - ``MAP_SHARED``. Dans ce cas, plusieurs processus peuvent accéder et modifier la page qui est mappée en mémoire. Lorsqu'un processus modifie le contenu d'une page, la modification est visible aux autres processus. Par contre, le fichier qui est mappé en mémoire n'est modifié que lorsque le noyau du système d'exploitation décide d'écrire les données modifiées sur le dispositif de stockage. Ces écritures dépendent de nombreux facteurs, dont la charge du système. Si un processus veut être sûr des écritures sur disque des modifications qu'il a fait à un fichier mappé un mémoire, il doit exécuter l'appel système `msync(2)`_ ou supprimer le mapping via `munmap(2)`_.
+..
+.. .. spelling::
+..
+..    mapping
+..
+.. Ces deux drapeaux peuvent dans certains cas particuliers être combinés avec d'autres drapeaux définis dans la page de manuel de `mmap(2)`_.
+..
+.. Lorsque `mmap(2)`_ réussit, il retourne l'adresse du début de la zone mappée en mémoire. En cas d'erreur, la constante ``MAP_FAILED`` est retournée et ``errno`` est mis à jour en conséquence.
+..
+.. L'appel système `msync(2)`_ permet de forcer l'écriture sur disque d'une zone mappée en mémoire. Le premier argument est l'adresse du début de la zone qui doit être écrite sur disque. Le deuxième argument est la longueur de la zone qui doit être écrite sur le disque. Enfin, le dernier contient un drapeau qui spécifie comment les pages correspondantes doivent être écrites sur le disque. Le drapeau ``MS_SYNC`` indique que l'appel `msync(2)`_ doit bloquer tant que les données n'ont pas été écrites. Le drapeau ``MS_ASYNC`` indique au noyau que l'écriture doit être démarrée, mais l'appel système peut se terminer avant que toutes les pages modifiées aient été écrites sur disque.
+..
+.. .. code-block:: c
+..
+..    #include <sys/mman.h>
+..    int msync(void *addr, size_t length, int flags);
+..
+..
+.. Lorsqu'un processus a fini d'utiliser un fichier mappé en mémoire, il doit d'abord supprimer le mapping en utilisant l'appel système `munmap(2)`_. Cet appel système prend deux arguments. Le premier doit être un multiple de la taille d'une page [#ftaillepage]_. Le second est la taille de la zone pour laquelle le mapping doit être retiré.
+..
+.. .. code-block:: c
+..
+..    #include <sys/mman.h>
+..
+..    int munmap(void *addr, size_t length);
+..
+..
+.. A titre d'exemple d'utilisation de `mmap(2)`_ et `munmap(2)`_, le programme ci-dessous implémente l'équivalent de la commande `cp(1)`_. Il prend comme arguments deux noms de fichiers et copie le contenu du premier dans le second. La copie se fait en mappant le premier fichier entièrement en mémoire et en utilisant la fonction `memcpy(3)`_ pour réaliser la copie. Cette solution fonctionne avec de petits fichiers. Avec de gros fichiers, elle n'est pas très efficace car tout le fichier doit être mappé en mémoire.
+..
+.. .. literalinclude:: /MemoireVirtuelle/src/cp2.c
+..    :encoding: utf-8
+..    :language: c
+..    :start-after: ///AAA
+..
 
  
 
@@ -515,6 +573,3 @@ A titre d'exemple d'utilisation de `mmap(2)`_ et `munmap(2)`_, le programme ci-d
 .. [#flimit] Il y a une limite maximale au nombre de fichiers qui peuvent être ouverts par un processus. Cette limite peut être récupérée avec l'appel système `getdtablesize(2)`_.
 
 .. [#fendianfig] Source : http://en.wikipedia.org/wiki/Endianness
-
-.. [#ftaillepage] Il est possible d'obtenir la taille des pages utilisée sur un système via les appels `sysconf(3)`_ ou `getpagesize(2)`_
-
