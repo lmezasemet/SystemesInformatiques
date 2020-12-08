@@ -360,7 +360,7 @@ En plus de l'un des trois drapeaux ci-dessus, il est également possible de spé
  - ``O_APPEND`` : indique que le fichier est ouvert de façon à ce que les données écrites dans le fichier par l'appel système `write(2)`_ s'ajoutent à la fin du fichier.
  - ``O_TRUNC`` : indique que si le fichier existe déjà et qu'il est ouvert en écriture, alors le contenu du fichier doit être supprimé avant que le processus ne commence à y accéder.
  - ``O_SYNC`` : ce drapeau indique que toutes les opérations d'écriture sur le fichier doivent être effectuées immédiatement sur le dispositif de stockage sans être mises en attente dans les buffers du noyau du système d'exploitation
-   ..  - ``O_CLOEXEC`` : ce drapeau qui est spécifique à Linux indique que le fichier doit être automatiquement fermé lors de l'exécution de l'appel système `execve(2)`_. Normalement, les fichiers qui ont été ouverts par `open(2)`_ restent ouverts lors de l'exécution de `execve(2)`_.
+ - ``O_CLOEXEC`` : ce drapeau qui est spécifique à Linux indique que le fichier doit être automatiquement fermé lors de l'exécution de l'appel système `execve(2)`_. Normalement, les fichiers qui ont été ouverts par `open(2)`_ restent ouverts lors de l'exécution de `execve(2)`_.
 
 
 Ces différents drapeaux binaires doivent être combinés en utilisant une disjonction logique entre les différents drapeaux. Ainsi, ``O_CREAT|O_RDWR`` correspond à l'ouverture d'un fichier qui doit à la fois être créé si il n'existe pas et ouvert en lecture et écriture.

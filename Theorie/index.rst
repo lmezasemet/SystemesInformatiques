@@ -97,6 +97,7 @@ Fichiers
 
    Fichiers/fichiers
    Fichiers/fichiers-signaux
+   Fichiers/fichiers-filesystem
 
 *******
 Annexes

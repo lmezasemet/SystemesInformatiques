@@ -7,6 +7,8 @@
 La mémoire virtuelle
 ====================
 
+.. todo:: l'utilité d'un swap même lorsque la mémoire disponible est suffisante n'est p.e. pas suffisamment claire. CF "The casual reader may think that with a sufficient amount of memory, swap is unnecessary but this brings us to the second reason. A significant number of the pages referenced by a process early in its life may only be used for initialisation and then never used again. It is better to swap out those pages and create more disk buffers than leave them resident and unused." in https://www.kernel.org/doc/gorman/html/understand/understand014.html
+
 Le modèle d'interaction entre le processeur et la mémoire que nous avons utilisé jusqu'à présent est le modèle traditionnel. Dans ce modèle, illustré sur la figure ci-dessous, la mémoire est divisée en octets. Chaque octet est identifié par une adresse encodée sur :math:`n` bits. Une telle mémoire peut donc contenir au maximum :math:`2^n` octets de données. Aujourd'hui, les processeurs utilisent généralement des adresses sur 32 ou 64 bits. Avec des adresses sur 32 bits, la mémoire peut stocker :math:`4.294.967.296` octets (4 Go) de données. Avec des adresses sur 64 bits, la capacité de stockage de la mémoire monte à :math:`18.446.744.073.709.551.616` octets (16 Eo, exa-octets). Si on trouve facilement aujourd'hui des mémoires avec une capacité de :math:`4.294.967.296` octets, il n'en existe pas encore qui sont capables de stocker :math:`18.446.744.073.709.551.616` et il faudra probablement quelques années avant que de telles capacités ne soient utilisables en pratique.
 
 .. figure:: /MemoireVirtuelle/fig/proc-mem-alt.png
