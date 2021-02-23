@@ -754,7 +754,7 @@ Les types ``Entier`` et ``int`` peuvent être utilisés de façon interchangeabl
      :start-after: ///CCC
      :end-before: ///DDD
 
- Malheureusement, il y a un risque dans un grand programme que le développeur oublie que ces types de données correspondent à des pointeurs qui doivent être manipulés avec soin. Le `Linux kernel coding style <http://www.kernel.org/doc/Documentation/CodingStyle>`_ contient une discussion intéressante sur l'utilisation des ``typedef``.
+ Malheureusement, il y a un risque dans un grand programme que le développeur oublie que ces types de données correspondent à des pointeurs qui doivent être manipulés avec soin. Le `Linux kernel coding style <https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs>`_ contient une discussion intéressante sur l'utilisation des ``typedef``.
 
 
 Les pointeurs sont fréquemment utilisés lors de la manipulation de structures. Lorsqu'un pointeur pointe vers une structure, il est utile de pouvoir accéder facilement aux éléments de la structure. Le langage C supporte deux notations pour représenter ces accès aux éléments d'une structure. La première notation est ``(*ptr).elem``  où ``ptr`` est un pointeur et ``elem`` l'identifiant d'un des éléments de la structure pointée par ``ptr``. Cette notation est en pratique assez peu utilisée. La notation la plus fréquente est ``ptr->elem`` dans laquelle ``ptr`` et ``->elem`` sont respectivement un pointeur et un identifiant d'élément. L'exemple ci-dessous illustre l'initialisation de deux fractions en utilisant ces notations.
