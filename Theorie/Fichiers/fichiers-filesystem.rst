@@ -141,8 +141,7 @@ Stockage indexé
 
 Une deuxième approche pour stocker la liste des blocs occupés par un fichier est d'utiliser directement un bloc complet comme *bloc d'index* vers des blocs de données.
 Ainsi, il n'y a plus de spécialisation de zone du disque pour stocker d'un côté les métadonnées et de l'autre les données.
-C'est l'approche qui est suivie par les systèmes de fichiers les plus courants sous UNIX et Linux, comme ext3, ext4, etc.
-Elle est illustrée par la figure suivante.
+Cette approche est illustrée par la figure suivante.
 
  .. figure:: fig/inode.png
     :align: center
@@ -153,7 +152,7 @@ Elle est illustrée par la figure suivante.
 Dans cet exemple, le bloc rose sert d'index pour le fichier.
 Il contient directement les métadonnées (propriétaire du fichier, groupe, etc.) et une liste de numéros des blocs jaunes formant le contenu du fichier.
 
-Un premier avantage de cette approche est qu'il n'est pas nécessaire de limiter à l'avance le nombre maximal de fichiers en choisissant une taille pour la table d'indexation : il est possible de stocker des nouveaux fichiers tant qu'il existe au moins deux blocs libres, un pour les bloc d'index et un pour les données (voir aucun si le fichier est vide, e.g. il a été créé en utilisant `touch(1)`_).
+Un avantage de cette approche est qu'il n'est pas nécessaire de limiter à l'avance le nombre maximal de fichiers en choisissant une taille pour la table d'indexation : il est possible de stocker des nouveaux fichiers tant qu'il existe au moins deux blocs libres, un pour les bloc d'index et un pour les données (voir aucun si le fichier est vide, e.g. il a été créé en utilisant `touch(1)`_).
 
 Un désavantage est que l'espace nécessaire pour tout fichier est toujours augmenté d'un bloc (par exemple de 4 Ko) ce qui est largement plus volumineux qu'une entrée dans une table d'indexation.
 Un fichier même très petit occupera donc au moins deux blocs : un fichier de 18 octets contenant uniquement la chaîne "Bonjour LINFO1252" occuperait ainsi deux blocs de 4 Ko sur le disque, soit un total de 8 Ko.
@@ -199,7 +198,7 @@ Le même principe est applicable avec un troisième niveau d'indirection, permet
 Stockage des répertoires
 """"""""""""""""""""""""
 
-Un répertoire dans un système de fichier comme ext4 est stocké de la même manière qu'un fichier, à ceci près qu'un indicateur (le flag ``b`` dans les métadonnées) est mis à vrai, et que le bloc de données associés à l'inode comprendra alors une liste de structures de données ``dirent``.
+Un répertoire dans un système de fichier comme ext4 est stocké de la même manière qu'un fichier, à ceci près qu'un indicateur (le flag ``d`` dans les métadonnées) est mis à vrai, et que le bloc de données associés à l'inode comprendra alors une liste de structures de données ``dirent``.
 Ces structures contiennent l'association entre des noms de fichiers et sous-répertoires et les inodes correspondants.
 Lorsque le nombre d'entrées ``dirent`` dans le répertoire dépasse la capacité d'un bloc, des blocs accessibles via les niveaux d'indirection sont utilisés, tout comme pour les fichiers.
 On notera que ext4 utilise une optimisation qui est de stocker directement dans l'inode du répertoire les entrées dirent lorsque leur nombre est très petit, évitant ainsi d'utiliser un bloc pour peu de données.
@@ -325,8 +324,8 @@ Ils effectuent de nombreuses vérifications, dont un exemple est de reconstruire
 Un bloc marqué comme libre alors qu'il ne l'est en réalité par sera marqué comme tel, et un bloc effectivement libre sera ajouté au compte de l'espace disponible sur la partition.
 Sous Linux, l'utilitaire `fsck(8)`_ est le vérificateur pour les systèmes de fichiers de la famille ext, comme ext4.
 
-Systèmes de fichiers journalisées
-"""""""""""""""""""""""""""""""""
+Systèmes de fichiers journalisés
+""""""""""""""""""""""""""""""""
 
 Le système de fichier ext4, à l'image de la plupart des systèmes de fichiers modernes, utilise le principe de la journalisation.
 Les opérations d'écriture sur le disque ne sont pas réalisées directement là où un bloc est stocké.
