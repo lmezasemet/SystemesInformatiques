@@ -14,7 +14,7 @@ Questions INGINIOUS
 #. Faites l'exercice relatif à `strlen(3)`_ sur INGINIOUS : https://inginious.info.ucl.ac.be/course/LEPL1503/s2_strlen
 
 
-#. Faites l'exercice relatif à `strcasecmp(3)`_ sur INGINIOUS : https://inginious.info.ucl.ac.be/course/LEPL1503/s2_casecmp
+#. Faites l'exercice relatif à `strcasecmp(3)`_ sur INGINIOUS : https://inginious.info.ucl.ac.be/course/LEPL1503/s2_strcasecmp
 
 #. L'an dernier, vous avez écrit un programme permettant de détecter si une chaîne de caractères était un palindrome. Faites de même en C avec l'exercice INGINIOUS https://inginious.info.ucl.ac.be/course/LEPL1503/s2_palindrome   
 
