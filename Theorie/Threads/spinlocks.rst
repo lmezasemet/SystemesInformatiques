@@ -399,7 +399,7 @@ Il n'est pas nécessaire de changer la valeur stockée dans ``ticket[]`` pour ce
      // Parcours des tickets des autres threads dont le drapeau est levé
      for (int j=0; j<N; j++) {
        if (drapeau[j]) {
-         if (ticket[j] > ticket[i]) {
+         if (ticket[j] < ticket[i]) {
            // Il y a un autre thread actif devant dans la file ...
            mon_tour = 0;
          }
@@ -428,13 +428,13 @@ On peut mettre en œuvre cette correction en remplaçant :
 
 .. code-block:: c
 
-  if (ticket[j] > ticket[i]) { ... }
+  if (ticket[j] < ticket[i]) { ... }
 
 Par :
 
 .. code-block:: c
 
-  if ((ticket[j] > ticket[i]) || ((ticket[j]==ticket[i]) && j>i)) { ... }
+  if ((ticket[j] < ticket[i]) || ((ticket[j]==ticket[i]) && j>i)) { ... }
 
 .. note:: Interaction entre scheduler et algorithme d'exclusion mutuelle
 
