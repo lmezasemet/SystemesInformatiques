@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   int day = 1;
   int hour = 12;
   int min = 42;
-  char str[] = "SINF1252";
+  char str[] = "LEPL1503";
   int i;
   
   // affichage de la date et l'heure
