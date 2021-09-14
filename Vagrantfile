@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "hashicorp/precise32"
+  config.vm.box = "ubuntu/focal64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -65,18 +65,20 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-     sudo apt-get update
-     sudo apt-get install -y python-sphinx
-     sudo apt-get install -y make
-     sudo apt-get install -y git
-     sudo apt-get install -y texlive-latex-base
-     sudo apt-get install -y texlive-latex-extra
-     sudo apt-get install -y texlive-fonts-recommended
-     sudo apt-get install -y python-sphinxcontrib.spelling
-     sudo apt-get install -y hunspell hunspell-fr
+  echo "Config done, go cmd line."
+     sudo apt update
+     sudo apt install -y make git texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+     sudo apt install -y python3-sphinx python3-sphinxcontrib.spelling
+     sudo apt install -y hunspell hunspell-fr
+     sudo apt install -y python3-pip
+#      sudo apt-get install -y python-sphinx 
+#      sudo apt-get install -y python-sphinxcontrib.spelling
+#      sudo apt-get install -y hunspell hunspell-fr
+#      sudo apt-get install -y lftp
+#      sudo apt-get install -y python-pip
+     sudo pip install -e git+https://github.com/bitprophet/alabaster/#egg=alabaster
+     sudo pip install PyStemmer
      sudo apt-get install -y lftp
-     sudo apt-get install -y python-pip
-     sudo pip install -e git+https://github.com/bitprophet/alabaster/#egg=alabaster 
      echo 'export LC_ALL=en_US.UTF-8' >> /home/vagrant/.bashrc
      echo 'export LANG=en_US.UTF-8' >> /home/vagrant/.bashrc
   SHELL

@@ -15,19 +15,19 @@ Introduction
    word
    virtualisation
 
-Les systèmes informatiques sont partout dans notre quotidien : de notre téléphone portable à notre montre connectée, de notre ordinateur de bureau  aux très nombreux *serveurs* supportant les services internet que nous utilisons quotidiennement. De nombreux objets du quotidien sont eux-aussi des systèmes informatiques : on assiste ainsi à une explosion du nombre d'objets connectés (par exemple, des ampoules programmables ou des hauts-parleurs interactifs) et nombreux sont les objets qui intègrent désormais un ordinateur, comme les voitures ou les appareils électroménagers.
+Les systèmes informatiques sont partout dans notre quotidien : de notre téléphone portable à notre montre connectée, de notre ordinateur de bureau aux très nombreux *serveurs* supportant les services internet que nous utilisons quotidiennement. De nombreux objets du quotidien sont eux-aussi des systèmes informatiques : on assiste ainsi à une explosion du nombre d'objets connectés (par exemple, des ampoules programmables ou des hauts-parleurs interactifs) et nombreux sont les objets qui intègrent désormais un ordinateur, comme les voitures ou les appareils électroménagers.
 
 Malgré la diversité de leurs usages, tous ces appareils ont en commun des principes fondamentaux de fonctionnement et d'organisation. Un système informatique intègre toujours au moins un :term:`processeur` (:term:`CPU` en anglais), une mémoire, et un ou des dispositifs d'entrée/sortie lui permettant d'interagir avec son environnement.
 
 Le :term:`CPU` est un circuit électronique réalisant très rapidement des opérations simples :
 
  - lire de l'information en mémoire;
- - écrire de l'information en mémoire;
- - effectuer des calculs.
+ - effectuer des calculs élémentaires sur cette information;
+ - écrire de l'information (le résultat) en mémoire.
 
-Les opérations effectuées par le :term:`processeur` sont mises en œuvre directement de manière électronique. On parle d'*instructions*. Le jeu d'instruction d'un :term:`processeur` dépend de son modèle. Par exemple, les ordinateurs Apple et les PCs récents utilisent des processeurs Intel ou AMD permettant d'exécuter le jeu d'instruction ``x86_64``. Dans un futur proche, les ordinateurs Apple utiliseront un CPU mettant en œuvre le jeu d'instruction ``ARM A64``, le même que celui supporté par le processeur du nano-ordinateur RaspberryPI.
+Les opérations effectuées par le :term:`processeur` sont mises en œuvre directement de manière électronique. On parle d'*instructions*. Le jeu d'instruction mis en œuvre par un :term:`processeur` est fixe et dépend de son modèle. Par exemple, certains ordinateurs Apple et l'ensemble des PCs récents utilisent des processeurs de marque Intel ou AMD permettant d'exécuter le jeu d'instruction ``x86_64``. En revanche, les ordinateurs Apple les plus récents utilisent un CPU mettant en œuvre le jeu d'instruction ``ARM A64``, le même que celui supporté par le processeur du nano-ordinateur RaspberryPI et de nombreux systèmes embarqués.
 
-La très grande majorité des processeurs adoptent les principes de l'architecture dite de Von Neumann, du nom du pionnier de l'informatique Jon von Neumann qui l'a proposé. Suivant cette architecture, la mémoire principale est utilisée à la fois pour stocker les informations traitées et produites par le programme à exécuter, mais aussi les instructions composant ce programme.
+La très grande majorité des processeurs adoptent les principes de l'architecture dite de Von Neumann du nom du pionnier de l'informatique, Jon von Neumann, qui l'a proposé. Suivant cette architecture, la mémoire principale est utilisée pour stocker aussi bien les informations traitées et produites par le programme à exécuter, que les instructions composant ce programme.
 
 Représentation de l'information
 -------------------------------
@@ -41,9 +41,9 @@ Physiquement, un bit est représenté sous la forme d'un signal électrique ou o
 
 Le bit est l'unité de base de stockage et de transfert de l'information. En général, les systèmes informatiques ne traitent pas des bits individuellement, mais par blocs. On appelle un :term:`nibble` un bloc de 4 bits consécutifs et un  :term:`octet` (ou :term:`byte` en anglais) un bloc de 8 bits consécutifs. On parle de mots (`word` en anglais) pour des groupes comprenant généralement 32 bits et de long mot pour des groupes de 64 bits.
 
-Suivant l'architecture de Von Neumann, les données tout comme les instructions à exécuter par le processeur sont stockées sous forme binaire dans la mémoire. Le processeur va donc lire la prochaine instruction à exécuter sous forme d'un groupe de bits, la déchiffrer, et appliquer l'effet prévu pour l'instruction correspondante, avant de recommencer. L'identité de l'instruction à exécuter est déterminée en décodant les premiers bits de l'instruction; le reste contient ses arguments ou *opérandes*. 
+Suivant l'architecture de Von Neumann, les données tout comme les instructions à exécuter par le processeur sont stockées sous forme binaire dans la mémoire. Le processeur va donc lire la prochaine instruction à exécuter sous forme d'un groupe de bits, la déchiffrer, et appliquer l'effet prévu pour l'instruction correspondante, avant de recommencer. L'identité de l'instruction à exécuter est déterminée en décodant les premiers bits de l'instruction; le reste contient ses arguments ou *opérandes*. Par exemple, une instruction de lecture en mémoire peut spécifier (1) où la lecture doit se faire et (2) où stocker la valeur lue.
 
-Un jeu d'instruction peut contenir des centaines d'instructions différentes. Certaines instructions ont pour objectif de déterminer la prochaine instruction à lire depuis la mémoire, décoder et exécuter. Ces instructions de contrôle de flux permettent de mettre en œuvre les structures de contrôle : conditionnelles et boucles. D'autres instructions effectuent des calculs, ou permettent de lire ou d'écrire des donnés depuis et vers la mémoire.
+Un jeu d'instruction peut contenir des centaines d'instructions différentes. Certaines instructions ont pour objectif de déterminer la prochaine instruction à lire depuis la mémoire, décoder et exécuter. Ces instructions de *contrôle de flux* permettent de mettre en œuvre les structures de contrôle : conditionnelles (*if*) et boucles (*while*, etc.). La majorité des autres instructions effectuent des calculs, permettent de lire ou d'écrire des donnés depuis et vers la mémoire. Quelques instructions sont, comme nous le verrons, réservés au pilotage du comportement du processeur.
 
 Interaction avec le monde extérieur
 -----------------------------------
@@ -59,28 +59,29 @@ Le processeur et la mémoire ne sont pas les deux seuls composants d'un système
  - le haut-parleur avec lequel l'ordinateur peut diffuser différentes sortes de son;
  - le microphone et la caméra qui permettent à l'ordinateur de capturer des informations sonores et visuelles pour les stocker ou les traiter.
 
-Les dispositifs d'entrée/sortie et de stockage sont gérés par des contrôleurs de périphériques spécifiques. Par exemple, un contrôleur de périphérique pour le clavier peut être un micro-contrôleur qui interagit avec le dispositif matériel et détecte la frappe de touches. Ce contrôleur de périphérique dispose d'une mémoire propre, qui contient l'identifiant de la touche qui vient d'être frappée.
+Les dispositifs d'entrée/sortie et de stockage sont gérés par des *contrôleurs de périphériques* spécifiques. Par exemple, un contrôleur de périphérique pour le clavier peut être un micro-contrôleur qui interagit avec le dispositif matériel et détecte la frappe de touches. Ce contrôleur de périphérique dispose d'une mémoire propre, qui contient l'identifiant de la touche qui vient d'être frappée.
 
 Il est nécessaire, lorsque l'utilisateur fait une saisie au clavier, que le système puisse récupérer l'information de la mémoire du contrôleur afin de la traiter. Les entrées/sorties se déroulent de manière concurrente (en même temps) que l'exécution par le processeur des instructions du programme principal. Il est donc nécessaire de signaler au processeur qu'un évènement externe est survenu. Ceci est possible grâce au mécanisme d':term:`interruption`.
 
-Une :term:`interruption` est un signal extérieur au processeur qui force celui-ci à arrêter l'exécution du programme en cours, et à passer le contrôle du processeur à une routine de traitement qui va pouvoir la prendre en compte. Cette routine va tout d'abord déterminer la cause de l'interruption, soit en interrogeant un à un les contrôleurs de périphériques soit en utilisant un vecteur d'interruptions qui indique directement le contrôleur à la source de l'interruption. Un code de traitement spécifique est ensuite appelé qui peut, dans notre exemple, récupérer l'information de la mémoire interne du contrôleur du clavier pour la placer en mémoire principale.
+Une :term:`interruption` est un signal extérieur au processeur qui force celui-ci à arrêter l'exécution du programme en cours, et à passer le contrôle du processeur à une routine de traitement qui va pouvoir la prendre en compte. Cette routine va tout d'abord déterminer la cause de l'interruption, soit en interrogeant un à un les contrôleurs de périphériques soit en utilisant un vecteur d'interruptions qui indique directement lequel des contrôleurs est à la source de l'interruption. Un code de traitement spécifique est ensuite appelé qui peut, dans notre exemple, récupérer l'information de la mémoire interne du contrôleur du clavier pour la placer en mémoire principale.
 
-Outre les contrôleurs de périphériques externes comme le clavier, la souris ou une manette de jeu, il existe de nombreuses sources d':term:`interruption` possibles : une horloge générant une interruption de manière périodique (par exemple, toutes les 10 millisecondes), un dispositif de stockage annonçant la complétion d'une opération d'écriture ou de lecture, ou encore un périphérique réseau annonçant la réception de données.
+Outre les contrôleurs de périphériques externes comme le clavier, la souris ou une manette de jeu, il existe de nombreuses sources d':term:`interruption` possibles de dispositifs ou périphériques internes : une horloge générant une interruption de manière périodique (par exemple, toutes les 10 millisecondes), un dispositif de stockage annonçant la complétion d'une opération d'écriture ou de lecture, ou encore un périphérique réseau annonçant la réception de données sur son interface.
 
 .. topic:: L'accès direct à la mémoire ou DMA
   
-  Nous avons vu qu'une interruption peut permettre le transfert par le processeur d'une information (la touche pressée) entre la mémoire du contrôleur et la mémoire principale. Cette méthode est adéquate pour les périphériques comme le clavier ou un manette de jeux qui génèrent un nombre très limité d'information par seconde. Elle n'est toutefois pas viable pour les périphériques générant ou recevant de grandes quantités de données.
+  Nous avons vu qu'une interruption peut permettre le transfert par le processeur d'une information (e.g., la touche pressée au clavier) entre la mémoire du contrôleur et la mémoire principale. Cette méthode est adéquate pour les périphériques comme le clavier ou un manette de jeux qui génèrent un nombre très limité d'information à traiter (et donc d'interruptions) par seconde. Elle n'est toutefois pas viable pour les périphériques générant ou recevant de grandes quantités de données.
   
-  Si chaque réception d'une donnée (par exemple, un mot de 32 bits) génère une interruption, l'écriture de données sur un périphérique de stockage, ou la réception d'une informations sur le réseau, va simplement saturer le processeur d'interruptions et empêcher l'exécution du programme principal. Le système est alors inutilisable pour autre chose que le traitement de l'entrée/sortie.
+  Si chaque réception d'une donnée (par exemple, un mot de 32 bits) génère une interruption, l'écriture de données sur un périphérique de stockage, ou la réception d'une informations sur le réseau, va simplement saturer le processeur d'interruptions et empêcher l'exécution du programme principal. Le système est alors inutilisable pour autre chose que le traitement des entrées/sorties.
   
   Les systèmes informatiques modernes supportent le principe de :term:`DMA` pour Direct Memory Access ou accès direct à la mémoire. Avec DMA, un contrôleur de périphérique est autorisé à accéder directement à la mémoire principale pour y lire et écrire des données. Il n'est alors plus nécessaire de générer une interruption pour chaque mot lu ou écrit, mais seulement lorsqu'une qu'un bloc (ensemble) de données est disponible ou a été consommé. Cela permet au processeur de continuer d'exécuter le programme principal en *parallèle* de l'opération d'entrée/sortie.
 
 Rôle(s) du système d'exploitation
 ---------------------------------
 
-L'utilisation *directe* d'un système informatique par un programme unique est en théorie possible : c'est d'ailleurs ainsi que les premiers ordinateurs des années 50 étaient utilisés.
-Le programme devait alors prévoir les instructions spécifiques pour utiliser les ressources matérielles de l'ordinateur cible, et prendre en compte ses caractéristiques matérielles.
-Très rapidement (dès la fin des années 50), la nécessité d'un logiciel intermédiaire simplifiant et systématisant l'utilisation du matériel, comme par exemple la gestion des interruptions et des entrées/sorties que nous venons de décrire, s'est imposé.
+L'utilisation *directe* d'un système informatique par un programme unique est en théorie possible : c'est d'ailleurs ainsi que les premiers ordinateurs des années 1950 étaient utilisés.
+Le programme devait alors prévoir les instructions spécifiques pour utiliser les ressources de l'ordinateur cible, et prendre en compte l'ensemble de ses caractéristiques matérielles.
+Il était d'ailleurs courant que chaque ordinateur ait des caractéristiques particulières, nécessitant donc de programmer spécifiquement pour chaque environnement.
+Très rapidement (dès la fin des années 1950) la nécessité d'un logiciel intermédiaire simplifiant et systématisant l'utilisation du matériel, comme par exemple la gestion des interruptions et des entrées/sorties que nous venons de décrire, et permettant d'uniformiser l'utilisation des ordinateurs, s'est imposé.
 Tout système informatique comprend ainsi depuis un *système d'exploitation*.
 
 Un système d'exploitation remplit trois rôles principaux :
@@ -96,9 +97,9 @@ Exemples de virtualisation
 
 Nous illustrons ci-dessous le principe de virtualisation en utilisant trois exemples. Bien entendu, l'objectif dans cette introduction n'est pas de comprendre *en détail* les mécanismes et algorithmes permettant leur mise en œuvre, que nous couvrirons dans les chapitres dédiés de ce cours, mais seulement d'illustrer le principe général.
 
-On peut tout d'abord illustrer le principe de virtualisation avec l'utilisation des dispositifs de stockage. Il existe de nombreux dispositifs de stockage (disque dur, clé USB, CD, DVD, mémoire flash, ...). Chacun de ces dispositifs a des caractéristiques électriques et mécaniques propres. Ils permettent en général la lecture et/ou l'écriture de blocs de données de quelques centaines d'octets. Nous reviendrons sur leur fonctionnement ultérieurement. Peu d'applications sont capables de piloter directement de tels dispositifs pour y lire ou y écrire des blocs de données directement, et même si c'était le cas la prise en compte de tous les types de dispositifs disponibles sur le marché serait impossible. Par contre, la majorité des applications sont capables d'utiliser ces systèmes de stockage par l'intermédiaire du *système de fichiers*, un des composants d'un système d'exploitation. La représentation virtualisée qu'est le système de fichiers (arborescence des fichiers, de répertoires, etc.) et l'API associée (`open(2)`_, `close(2)`_, `read(2)`_, `write(2)`_) sont un exemple des services fournis par le système d'exploitation aux applications.
+On peut tout d'abord illustrer le principe de virtualisation avec l'utilisation des dispositifs de stockage. Il existe de nombreux dispositifs de stockage différents (disque dur, clé USB, CD, DVD, mémoire flash, ...). Chacun de ces dispositifs a des caractéristiques électriques et mécaniques propres. Ils permettent en général la lecture et/ou l'écriture de blocs de données de quelques centaines ou milliers d'octets à la fois. Nous reviendrons sur leur fonctionnement ultérieurement. Peu d'applications sont capables de piloter de tels dispositifs pour y lire ou y écrire des blocs de données directement, et même si c'était le cas la prise en compte de tous les types de dispositifs disponibles sur le marché serait impossible. Par contre, la majorité des applications sont capables d'utiliser ces systèmes de stockage par l'intermédiaire du *système de fichiers*, un des composants d'un système d'exploitation. La représentation virtualisée qu'est le système de fichiers (arborescence des fichiers, de répertoires, etc.) et l'API associée (`open(2)`_, `close(2)`_, `read(2)`_, `write(2)`_) sont un exemple des services fournis par le système d'exploitation aux applications.
 
-Un deuxième exemple de virtualisation est la notion de :term:`processus` mise en œuvre par tous les systèmes d'exploitation modernes. Celle-ci est une représentation virtuelle de la notion de programme principal s'exécutant sur le processeur, comme nous l'avons décrit précédemment. Elle permet le partage d'un processeur unique entre plusieurs programmes appartenant à un ou plusieurs utilisateurs. Un processus est l'exécution d'une suite d'instructions contenue dans un fichier programme. Le système d'exploitation donne l'illusion à chaque processus qu'il s'exécute de façon totalement isolée sur un processeur qui lui est dédiée, mais en réalité plusieurs processus alternent leur exécution sur un (ou quelques) processeur(s) partagé(s). Le système d'exploitation met en œuvre la notion de processus en alternant rapidement l'exécution de ces processus sur le ou les processeur(s). Ce principe permet de répondre au deuxième rôle du système d'exploitation, celui de l'efficacité. Lorsqu'un processus doit, par exemple, attendre la complétion d'une entrée/sortie (par exemple, si celui-ci attend qu'une touche du clavier soit pressée, que l'interruption correspondante arrive, qu'elle soit traitée, avant de pouvoir reprendre son exécution), le processeur peut être utilisé par un autre processus.
+Un deuxième exemple de virtualisation est la notion de :term:`processus` mise en œuvre par tous les systèmes d'exploitation modernes. Celle-ci est une représentation virtuelle de la notion de programme principal s'exécutant sur le processeur. Elle permet le partage d'un processeur (ou d'un ensemble de processeurs) unique entre plusieurs programmes appartenant à un ou plusieurs utilisateurs. Un processus est l'exécution d'une suite d'instructions contenue dans un fichier programme. Le système d'exploitation donne l'illusion à chaque processus qu'il s'exécute de façon totalement isolée sur un processeur qui lui est dédiée, mais en réalité plusieurs processus alternent leur exécution sur un (ou quelques) processeur(s) partagé(s). Le système d'exploitation met en œuvre la notion de processus en alternant rapidement l'exécution de ces processus sur le ou les processeur(s). Ce principe permet de répondre au deuxième rôle du système d'exploitation, celui de l'efficacité. Lorsqu'un processus doit, par exemple, attendre la complétion d'une entrée/sortie (par exemple, si celui-ci attend qu'une touche du clavier soit pressée, que l'interruption correspondante arrive, qu'elle soit traitée, avant de pouvoir reprendre son exécution), le processeur peut être utilisé par un autre processus.
 
 Un troisième et dernier exemple est la notion de *mémoire virtuelle*. Elle répond à deux problématiques :
 
@@ -114,7 +115,7 @@ Mise en œuvre du système d'exploitation
 
 La mise en œuvre d'un système d'exploitation est une tâche complexe, qui doit prendre en compte plusieurs facteurs possiblement contradictoires :
 
- 1. la nécessité de fournir des abstractions et virtualisations des ressources les plus simples possibles à utiliser pour les programmeurs (et donc de plus haut niveau) ;
+ 1. la nécessité de fournir des abstractions et virtualisations des ressources les plus simples possibles à utiliser pour les programmeurs (et donc de plus haut niveau possible) ;
  2. l'universalité des fonctionnalités, permettant de supporter des applications et usages variés avec un même système d'exploitation ;
  3. la performance et le surcoût de ces couches d'abstraction et de virtualisation ;
  4. leur complexité de mise en œuvre, et ce faisant, la complexité de leur mise en œuvre *correcte* (sans bug).
@@ -129,7 +130,7 @@ Nous verrons plusieurs exemples de support matériel à la virtualisation des re
 
 .. topic:: Le compromis entre abstraction et performance : exemple de la mémoire virtuelle
 
-  Comme expliqué précédemment, la mémoire virtuelle a de grands avantages : elle offre à chaque processus l'illusion d'un espace mémoire de grande taille, dont la structure est connue à l'avance (par exemple, la première instruction à exécuter est toujours au même emplacement, la :term:`pile` commence toujours au même endroit, etc.).
+  Comme expliqué précédemment, la mémoire virtuelle a de grands avantages : elle offre à chaque processus l'illusion d'un espace mémoire de grande taille qui lui est dédié et dont la structure est connue à l'avance (par exemple, la première instruction à exécuter est toujours au même emplacement, la :term:`pile` commence toujours au même endroit, etc.).
   Le principe de mémoire virtuelle est connu depuis la fin des années 1950, et a été mis en œuvre dans des super-ordinateurs dès les années 1960.
   On peut donc s'interroger : pourquoi des systèmes d'exploitation pour PC jusqu'aux années 1990 (comme MS-DOS), et des systèmes d'exploitations actuels pour systèmes embarqués (comme `uCLinux <https://en.wikipedia.org/wiki/%CE%9CClinux>`_) ne supportent-ils pas le concept de mémoire virtuelle, et gèrent le partage de la mémoire physique de façon explicite, en indiquant aux processus la plage d'adresses *physiques* qu'ils sont en droit d'utiliser ?
   
@@ -137,7 +138,7 @@ Nous verrons plusieurs exemples de support matériel à la virtualisation des re
   Nous le reverrons en détail lors du cours dédié.
   Un processus :math:`P_A` est composé d'instructions utilisant des adresses en mémoire virtuelle. 
   Une adresse virtuelle correspond a une adresse en mémoire physique qui est déterminée lors de l'exécution du programme.
-  Il est nécessaire de faire la traduction dynamique entre des adresses virtuelles et des adresses physiques pour chaque instruction accédant à la mémoire en lecture ou écriture.
+  Il est donc nécessaire de faire la traduction dynamique entre des adresses virtuelles et des adresses physiques, et ce pour chaque instruction accédant à la mémoire en lecture ou écriture.
   Par exemple, l'adresse virtuelle ``0x0000FF00`` pour le processus :math:`P_A` peut correspondre à l'adresse ``0x5FD6FF00`` en mémoire physique.
   Cette traduction est effectuée en consultant une structure de donnée stockée elle aussi en mémoire, appelée la :term:`table des pages`.
   Sans support matériel spécifique, il est nécessaire de transformer toute lecture ou écriture dans la mémoire en deux opérations :
@@ -148,18 +149,18 @@ Nous verrons plusieurs exemples de support matériel à la virtualisation des re
   L'opération (1) demande systématiquement un accès mémoire supplémentaire pour lire la page des tables.
   Chaque accès mémoire dans le programme original est ainsi transformé en *deux* accès mémoire.
   La mémoire étant typiquement un facteur limitant la performance d'exécution des processus, le temps d'exécution peut être simplement doublé ! 
-  Le compromis entre utilité et coût n'est alors clairement pas favorable à la mise en œuvre de la mémoire virtuelle.
+  Dans ces conditions, le compromis entre utilité et coût n'est clairement pas favorable à la mise en œuvre de la mémoire virtuelle.
   
   Pour cette raison, quasiment tous les processeurs modernes intègrent un circuit dédié à la gestion de la virtualisation de la mémoire, appelé la :term:`MMU` (Memory Management Unit).
   La MMU conserve dans une mémoire très rapide des informations sur les associations entre adresses virtuelles et adresses physiques les plus récemment utilisées, et peut assurer la traduction *en ligne* des adresses. 
   Cela permet, dans la grande majorité des cas, que l'accès mémoire soit aussi rapide qu'un accès direct.
   Lorsque l'information n'est pas disponible, en revanche, le coût est important : le système d'exploitation doit reprendre la main pour fournir l'information nécessaire à la MMU, ce qui peut prendre un temps équivalent à des centaines voire des milliers d'opérations en mémoire.
-  Comme ce cas de figure n'arrive pas souvent (nous verrons pourquoi), le support matériel qu'est la MMU permet de fournir l'abstraction de haut niveau qu'est la mémoire virtuelle à un coût qui est désormais considéré comme acceptable en regarde de la plus-value qu'elle apporte.
+  Comme ce cas de figure n'arrive pas souvent (nous verrons pourquoi), le support matériel qu'est la MMU permet de fournir l'abstraction de haut niveau qu'est la mémoire virtuelle à un coût qui est désormais considéré comme acceptable en regard de la plus-value qu'elle apporte.
 
 Mécanisme vs. politique
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Un aspect important de la mise en œuvre des systèmes d'exploitation, et dont nous discuterons régulièrement dans ce cours, est la séparation entre les mécanismes permettant d'abstraire une ressource matérielle, et les politiques arbitrant le partage de cette ressource (entre les différent programmes, les différents utilisateurs, etc.).
+Un autre aspect important de la mise en œuvre des systèmes d'exploitation, et dont nous discuterons régulièrement dans ce cours, est la séparation entre les mécanismes permettant d'abstraire une ressource matérielle, et les politiques arbitrant le partage de cette ressource (entre les différent programmes, les différents utilisateurs, etc.).
 
 Illustrons ce principe avec l'abstraction de la ressource processeur *via* la notion de processus.
 Comme nous l'avons expliqué précédemment, chaque processus a l'illusion de s'exécuter sur un processeur unique.
@@ -168,15 +169,15 @@ Bien entendu, un seul processus peut s'exécuter sur un processeur à un moment 
 Régulièrement, le système d'exploitation va donc alterner les processus s'exécutant sur chaque processeur, afin que chaque processus ait régulièrement l'occasion d'exécuter des instructions.
 L'abstraction processus nécessite donc :
 
- 1. Un **mécanisme** permettant d'alterner un processus pour un autre sur un processeur. Ce mécanisme est appelé le :term:`changement de contexte`. Il consiste en deux phases : (1) la sauvegarde de l'état complet du processeur (valeurs des registres, prochaine instruction à exécuter, etc.) dans la mémoire et (2) la restauration de l'état tel que sauvegardé en mémoire de l'autre processus, afin de remettre le processeur dans l'état exact où celui-ci se trouvait lors de sa précédente interruption.
- 2. Une **politique** qui décide lesquels des processus disponibles pour l'exécution doivent se voir allouer un processeur ou quand un processus en cours d'exécution doit être interrompu. On appelle cette politique une :term:`politique d'ordonnancement` (scheduling en anglais).
+ 1. Un **mécanisme** permettant d'alterner un processus pour un autre sur un processeur. Ce mécanisme est appelé le :term:`changement de contexte`. Il consiste en deux phases : (1) la sauvegarde de l'état complet du processeur exécutant le premier processus (valeurs des registres, prochaine instruction à exécuter, etc.) dans la mémoire et (2) la restauration de l'état tel que sauvegardé en mémoire du second processus, afin de remettre le processeur dans l'état exact où celui-ci se trouvait lors de sa précédente interruption.
+ 2. Une **politique** qui décide lesquels des processus disponibles pour l'exécution doivent se voir allouer un processeur quand celui-ci devient disponible, ou même quand un processus en cours d'exécution doit être interrompu. On appelle cette politique une :term:`politique d'ordonnancement` (*scheduling* en anglais).
 
 Le mécanisme de :term:`changement de contexte` doit avoir un coût le plus faible possible, car son utilisation est un pur surcoût pour le système.
 La définition de la politique adéquate, en revanche, est plus subtile car elle dépend des objectifs du système informatique considéré.
 Par exemple, on peut vouloir un partage équitable du temps processeur entre les différents utilisateurs, ou au contraire privilégier des tâches par rapport à d'autres.
 Pour certaines tâches, comme des simulations de modèles mathématiques, on cherchera à maximiser le *débit applicatif*, c'est à dire le nombre d'instructions utiles effectuées par seconde : on préfèrera alors le moins de changements de contexte possible.
-Pour d'autres processus dits interactifs on cherchera à minimiser le temps d'attente entre la disponibilité du processus pour être exécuté et la mise à disposition d'un processeur : ici, au contraire, on voudra alterner les processus rapidement pour minimiser le temps d'attente.
-Ce dernier cas est par exemple celui d'un jeu vidéo.
+Pour d'autres processus dits *interactifs* on cherchera à minimiser le temps d'attente entre la disponibilité du processus pour être exécuté et la mise à disposition d'un processeur : ici, au contraire, on voudra alterner les processus rapidement pour minimiser le temps d'attente.
+Ce dernier cas pourrait être par exemple celui d'une application de jeu de réflexes utilisant le clavier.
 Sur la base de notre exemple de l'entrée/sortie clavier au début de cette introduction, on peut souhaiter minimiser le temps entre la réception de l'interruption depuis le contrôleur de périphérique clavier et le temps auquel le processus jeu peut prendre en compte la commande.
 
 Interaction entre les applications et le système d'exploitation
@@ -184,12 +185,12 @@ Interaction entre les applications et le système d'exploitation
 
 Le système d'exploitation fournit des services aux applications permettant de simplifier et d'uniformiser l'utilisation des ressources du système informatique.
 Certains de ces services sont accessibles sous la forme de programmes utilitaires permettant la gestion du système ou son utilisation (comme, par exemple, un gestionnaire de login, un serveur `ssh(1)`_, ou un interpréteur de commande).
-D'autres sont accessibles sous la forme d'*appels système*; ceux-ci sont appelés directement par le programme ou, le plus souvent, utilisés par une librairie (comme la :term:`libc`) qui facilite leur utilisation.
+D'autres sont accessibles sous la forme d'*appels système*; ceux-ci sont appelés directement par un programme ou, le plus souvent, utilisés par une librairie (comme la :term:`libc`) qui facilite leur utilisation.
 
 La mise en œuvre des appels systèmes participe du troisième rôle d'un système d'exploitation, qui est celui de l'isolation des programmes (et des utilisateurs) entre eux.
 Les processeurs modernes fournissent (au minimum) deux modes d'exécution :
 
- - Le *mode utilisateur* est celui utilisé par les processus courants des utilisateurs, ainsi que par les utilitaires fournis par le système d'exploitation. En mode utilisateur, les programmes utilisent les abstractions fournies par le système d'exploitation comme la mémoire virtuelle, les processus, ou le système de fichiers. Certaines opérations, et l'accès à certaines parties de la mémoire, ne sont pas autorisés en mode utilisateur. Elles seront refusées par le processeur. Par exemple, il n'est pas permis d'utiliser les instructions configurant le traitement des interruptions en mode utilisateur (c'est raisonnable : bloquer le traitement des interruptions permettrait de bloquer le système informatique sans possibilité de corriger le tir).
+ - Le *mode utilisateur* est celui utilisé par les processus courants des utilisateurs, ainsi que par les utilitaires fournis par le système d'exploitation. En mode utilisateur, les programmes utilisent les abstractions fournies par le système d'exploitation comme la mémoire virtuelle, les processus, ou le système de fichiers. Certaines opérations, et l'accès à certaines parties de la mémoire, ne sont pas autorisés en mode utilisateur. Elles seront refusées par le processeur. Par exemple, il n'est pas permis d'utiliser les instructions configurant le traitement des interruptions en mode utilisateur (c'est raisonnable : bloquer le traitement des interruptions permettrait de bloquer le système informatique complet sans possibilité de corriger le tir).
  - Le *mode protégé* est utilisé par le noyau du système d'exploitation. Le noyau est le composant de plus bas niveau, qui interagit directement avec le matériel. Les instructions qui ne sont pas autorisées en mode utilisateur, comme la configuration des interruptions, ou l'envoi d'instructions aux gestionnaires de périphériques, etc. sont autorisées en mode protégé.
 
 L'utilisation de ces deux modes permet d'assurer l'isolation entre les processus s'exécutant en mode utilisateur, tout en permettant au noyau de gérer les ressources de manière globale.
@@ -199,12 +200,13 @@ Un appel système permet d'utiliser une fonctionnalité (par exemple, créer un 
 Afin d'utiliser un appel système, un processus utilisateur va tout d'abord préparer les arguments de cet appel (comme on le ferait pour un appel de fonction classique).
 Le passage en mode noyau afin de demander le service de cet appel ne revient pas, en revanche, à un appel de fonction classique (où l'on branche vers la première instruction de la fonction à exécuter).
 À la place, le processus appelant doit générer une interruption logicielle, ou :term:`trap`.
-Cette interruption fonctionne d'une manière similaire aux interruption matérielles que nous avons évoqué précédemment.
-Le processeur va automatiquement passer en mode protégé et exécuter le code point d'entrée du noyau, qui va déterminer l'appel système à traiter et effectuer l'opération.
-À la fin de ce traitement, le contrôle revient au processus appelant en mode utilisateur.
+Cette interruption fonctionne d'une manière similaire aux interruptions matérielles évoquées précédemment.
+Le processeur va automatiquement passer en mode protégé et exécuter le code du point d'entrée du noyau.
+Ce code va déterminer l'appel système à traiter puis enfin brancher vers la partie du code du noyau en charge de cette opération, qui va généralement commencer par vérifier que cet appel est autorisé pour le processus considéré.
+À la fin du traitement de l'appel système, le contrôle revient au processus appelant en mode utilisateur.
 
-On notera que les interruption logicielles sont aussi utiles pour permettre au système d'exploitation de traiter les erreurs d'un processus en particulier sans que les autres processus soient affectés.
-Par exemple, si un processus tente d'effectuer une division par zéro, ou bien tente d'accéder à une partie de la mémoire non autorisée (le fameux ``segmentation fault``) alors le processeur génère une interruption logicielle, redonnant ainsi le contrôle au noyau et permettant de traiter le problème (par exemple, en affichant un message d'erreur et en terminant le processus et libérant les ressources qu'il utilisait).
+On notera que les interruption logicielles sont aussi utiles pour permettre au système d'exploitation de traiter les erreurs d'un processus en particulier sans que les autres processus ne soient affectés.
+Par exemple, si un processus tente d'effectuer une division par zéro, ou bien tente d'accéder à une partie de la mémoire non autorisée (le fameux ``segmentation fault``) alors le processeur génère une interruption logicielle, redonnant ainsi le contrôle au noyau et permettant de traiter le problème (par exemple, en affichant un message d'erreur, en terminant le processus, et en libérant les ressources qu'il utilisait).
 
 .. spelling::
 
@@ -224,9 +226,9 @@ Par exemple, si un processus tente d'effectuer une division par zéro, ou bien t
 Unix
 ----
 
-Il existe de nombreux systèmes d'exploitation, visant des usages variés, des objets connectés (comme `RIOT <https://www.riot-os.org>`_) aux super-calculateurs, en passant par les ordinateurs personnels (comme Windows ou MaxOS).
-Nous nous intéresserons dans ce cours principalement au système :term:`GNU/Linux`, qui est aujourd'hui le système d'exploitation de loin le plus répandu dans le monde.
-En effet, des déclinaisons de systèmes utilisant :term:`Linux` équipent des systèmes informatiques de nature très variées, depuis les smartphones (Android) jusqu'aux `supercalculateurs <https://www.top500.org>`_.
+Il existe de nombreux systèmes d'exploitation, visant des usages variés, des objets connectés (comme `RIOT <https://www.riot-os.org>`_) aux super-calculateurs, en passant par les ordinateurs personnels (comme Windows ou MacOS).
+:term:`GNU/Linux` est aujourd'hui le système d'exploitation de loin le plus répandu dans le monde.
+En effet, des déclinaisons de systèmes utilisant :term:`Linux` équipent des systèmes informatiques de nature très variées, depuis les smartphones (Android), l'immense majorité des serveurs, et la totalité des plus grands `supercalculateurs <https://www.top500.org>`_.
 
 :term:`GNU/Linux` est un représentant de la famille de systèmes d'exploitation Unix. Unix est aujourd'hui un nom générique [#funix]_. La première version de Unix a été développée pour faciliter le traitement de documents sur mini-ordinateur.
 
@@ -236,17 +238,17 @@ En effet, des déclinaisons de systèmes utilisant :term:`Linux` équipent des s
 
    - :term:`Unix`. Initialement développé aux AT&T Bell Laboratories, Unix a été ensuite développé par d'autres entreprises. C'est aujourd'hui une marque déposée par ``The Open group``, voir http://www.unix.org/
    - :term:`BSD Unix`. Les premières versions de Unix étaient librement distribuées par Bell Labs. Avec le temps, des variantes d'Unix sont apparues. La variante développée par l'université de Berkeley en Californie a été historiquement importante car c'est dans cette variante que de nombreuses innovations ont été introduites dont notamment les piles de protocoles TCP/IP utilisées sur Internet. Aujourd'hui, :term:`FreeBSD` et :term:`OpenBSD` sont deux descendants de :term:`BSD Unix`. Ils sont utilisés dans de nombreux serveurs et systèmes embarqués. :term:`MacOS`, développé par Apple, s'appuie fortement sur un noyau et des utilitaires provenant de :term:`FreeBSD`.
-   - :term:`Minix` est un système d'exploitation développé initialement par :term:`Andrew Tanenbaum` à l'université d'Amsterdam. :term:`Minix` est fréquemment utilisé pour l'apprentissage du fonctionnement des systèmes d'exploitation.
-   - :term:`Linux` est un noyau de système d'exploitation largement inspiré de :term:`Unix` et `Minix`. Développé par :term:`Linus Torvalds` durant ses études d'informatique, il est devenu la variante de Unix la plus utilisée à travers le monde. Il est maintenant développé par des centaines de développeurs qui collaborent via Internet.
-   - :term:`Solaris` est le nom commercial de la variante Unix de Oracle.
+   - :term:`Minix` est un système d'exploitation développé initialement par :term:`Andrew Tanenbaum` à l'université d'Amsterdam. :term:`Minix` est généralement utilisé pour l'apprentissage du fonctionnement des systèmes d'exploitation.
+   - :term:`Linux` est un noyau de système d'exploitation largement inspiré de :term:`Unix` et de `Minix`. Développé par :term:`Linus Torvalds` durant ses études d'informatique, il est devenu la variante de Unix la plus utilisée à travers le monde. Il est maintenant développé par des centaines de développeurs qui collaborent via Internet.
+   - :term:`Solaris` est le nom commercial d'une variante Unix développée par Oracle.
 
  Dans le cadre de ce cours, nous nous focaliserons sur le système :term:`GNU/Linux`, c'est-à-dire un système qui intègre le noyau :term:`Linux` et les librairies et utilitaires développés par le projet :term:`GNU` de la :term:`FSF`.
 
 Un système Unix est composé de trois grands types de logiciels :
 
- - Le noyau du système d'exploitation qui est chargé automatiquement au démarrage de la machine et qui prend en charge toutes les interactions entre les logiciels et le matériel.
+ - Le noyau du système d'exploitation qui est chargé au démarrage de la machine et qui prend en charge toutes les interactions entre les logiciels et le matériel.
  - De nombreuses librairies qui facilitent l'écriture et le développement d'applications
- - De nombreux programmes utilitaires simples qui permettent de résoudre un grand nombre de problèmes courants. Certains de ces utilitaires sont chargés automatiquement lors du démarrage de la machine. La plupart sont exécutés uniquement à la demande des utilisateurs.
+ - De nombreux programmes utilitaires simples qui permettent de résoudre la plupart des problèmes courants. Certains de ces utilitaires sont chargés automatiquement lors du démarrage de la machine. Ils sont généralement exécutés uniquement à la demande des utilisateurs.
 
 .. spelling::
 
