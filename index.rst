@@ -39,9 +39,10 @@ Langage C
 
    Theorie/C/intro-C
    Theorie/C/datatypes
-   Theorie/C/malloc
-   Theorie/C/linker.rst
-
+   Theorie/C/declarations
+   Theorie/C/gestion_memoire
+   Theorie/C/malloc_implementation
+   Theorie/C/complements_C
 
 Systèmes Multiprocesseurs
 *************************

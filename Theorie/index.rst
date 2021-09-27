@@ -41,12 +41,13 @@ Langage C
 *********
 .. toctree::
    :maxdepth: 2
-
+  
    C/intro-C
    C/datatypes
-   C/malloc
+   C/declarations
+   C/gestion_memoire
    C/malloc_implementation
-   C/linker
+   C/complements_C
 
 Structure des ordinateurs
 *************************

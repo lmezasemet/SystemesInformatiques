@@ -2,7 +2,7 @@
 .. Copyright |copy| 2012, 2019 by `Olivier Bonaventure <http://inl.info.ucl.ac.be/obo>`_, Christoph Paasch et Grégory Detal
 .. Ce fichier est distribué sous une licence `creative commons <http://creativecommons.org/licenses/by-sa/3.0/>`_
 
-.. _datatypes:   
+.. _datatypes:
 
 Types de données
 ================
@@ -769,7 +769,7 @@ Les pointeurs sont fréquemment utilisés en combinaison avec des structures et 
 
 
 Les fonctions
--------------
+=============
 
 Comme la plupart des langages, le C permet de faciliter la compréhension d'un programme
 en le découpant en de nombreuses fonctions. Chacune réalise une
@@ -882,7 +882,7 @@ Les fonctions ``initptr`` et ``equalptr`` utilisent toutes les deux des pointeur
 
 
 Les expressions de manipulation de bits
----------------------------------------
+=======================================
 
 La plupart des langages de programmation sont spécialisés dans la manipulation des types de données classiques comme les entiers, les réels et les chaînes de caractères. Comme nous l'avons vu, le langage C permet de traiter ces types de données. En outre, il permet au programmeur de pouvoir facilement manipuler les bits qui se trouvent en mémoire. Pour cela, le langage C définit des expressions qui correspondent à la plupart des opérations de manipulation de bits que l'on retrouve dans les langages d'assemblage. Les premières opérations sont les opérations logiques.
 

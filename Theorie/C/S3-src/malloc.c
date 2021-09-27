@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
     error("malloc(string)");
 
   printf("Valeur du pointeur string après malloc : %p\n",string);
+  
   int *vector;
   vector=(int *)malloc(size*sizeof(int));
   if(vector==NULL)
