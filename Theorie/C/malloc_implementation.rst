@@ -5,8 +5,8 @@
 
 .. _moe_memoire_dynamique:
 
-Gestion de la mémoire dynamique
-===============================
+Gestion de mémoire dynamique
+============================
 
 Nous avons vu dans la section précédente comment allouer et libérer de la mémoire dans le :term:`heap` (tas) en utilisant les fonctions de la librairie standard `malloc(3)`_ et `free(3)`_, ainsi que leurs dérivées.
 
@@ -17,16 +17,16 @@ Pour rappel, les signatures de ces deux fonctions sont les suivantes :
    void *malloc(size_t size);
    void free(void *ptr);
 
-`malloc(3)`_ renvoie un pointeur vers une zone de mémoire du :term:`heap` de taille *minimum* ``size`` octets.
+`malloc(3)`_ renvoie un pointeur vers une zone de mémoire du :term:`heap` d'une taille *minimum* de ``size`` octets.
 `free(3)`_ permet de libérer une zone mémoire précédemment réservée indiquée par le pointeur ``ptr``.
 Cette dernière fonction a un comportement indéterminé si elle est appelée avec un pointeur ne correspondant pas à une zone mémoire réservée et non encore libérée.
 
 La gestion du :term:`heap` est sous la responsabilité d'un algorithme de *gestion de mémoire dynamique*.
 L'objectif de cet algorithme est double. 
-Premièrement, il doit retourner des zones réservées qui ne se chevauchent pas entre elles, et contiennent *au moins* le nombre d'octets demandés. 
+Premièrement, il doit retourner des zones réservées qui ne se chevauchent pas entre elles, et qui contiennent *au moins* le nombre d'octets demandés. 
 Deuxièmement, il doit permettre de *recycler* la mémoire des zones libérées pour pouvoir les utiliser de nouveau pour héberger de nouvelles zones réservées.
 
-Dans cette section, nous étudierons les principes et la mise en œuvre des algorithmes de gestion de mémoire dynamique.
+Dans cette section, nous étudierons les principes et la mise en œuvre de tels algorithmes de gestion de mémoire dynamique.
 
 Nous ne couvrirons pas la mise en œuvre de l'appel `realloc(3)`_ dans le cadre de ce cours.
 L'appel `calloc(3)`_ peut être mis en œuvre en utilisant `malloc(3)`_, ce qui est laissé en exercice.
@@ -52,7 +52,7 @@ L'appel `brk(2)`_ permet de fixer le *program break* a une valeur arbitraire.
 Sa valeur de retour est 0 lorsque l'opération est un succès, -1 sinon.
 L'appel `sbrk(2)`_ permet d'incrémenter la valeur du *program break* d'un nombre d'octets fourni en argument, et retourne la nouvelle valeur  du *program break*.
 Appeler `sbrk(2)`_ avec un argument de 0 permet de lire la valeur actuelle du *program break* sans la modifier.
-La figure suivante illustre le fonctionnement de l'appel `sbrk(2)`_ pour réserver 1 Giga-octet de mémoire pour le :term:`heap`.
+La figure suivante illustre le fonctionnement de l'appel `sbrk(2)`_ pour réserver 1 Giga-octet de mémoire supplémentaire pour le :term:`heap`.
 
 .. figure:: figures/sbrk.png
    :align: center
@@ -62,11 +62,15 @@ Les deux appels `brk(2)`_ et `sbrk(2)`_ peuvent échouer, en particulier lorsque
 Cette taille maximale dépend des paramètres du système et des autorisations de l'utilisateur.
 On peut connaître ces dernières en utilisant l'utilitaire `ulimit(1posix)`_.
 
-En pratique, un programme utilisateur utilise très rarement les appels `brk(2)`_ et `sbrk(2)`_ mais fait appel aux fonction de l'algorithme de gestion de mémoire dynamique, c'est à dire `malloc(3)`_ et `free(3)`_.
-La mise en oeuvre de  `malloc(3)`_ détermine ainsi quand il est nécessaire d'utiliser `sbrk(2)`_ pour étendre la taille de la :term:`heap` afin de répondre à une demande d'allocation, et la mise en oeuvre de `free(3)`_ peut de façon similaire décider de réduire la taille du :term:`heap` en appelant `sbrk(2)`_ avec un argument négatif.
+En pratique, un programme utilisateur n'utilise jamais directement les appels `brk(2)`_ et `sbrk(2)`_
+mais fait appel aux fonction de l'algorithme de gestion de mémoire dynamique, c'est à dire `malloc(3)`_
+et `free(3)`_. La mise en œuvre de `malloc(3)`_ détermine ainsi quand il est nécessaire d'utiliser
+`sbrk(2)`_ pour étendre la taille de la :term:`heap` afin de répondre à une demande d'allocation, et la
+mise en œuvre de `free(3)`_ peut de façon similaire décider de réduire la taille du :term:`heap` en
+appelant `sbrk(2)`_ avec un argument négatif.
 
 Note : On notera que des alternatives à `sbrk(2)`_ existent pour réserver de la mémoire dynamiquement pour le :term:`heap` d'un programme, et en particulier l'appel système `mmap(2)`_ que nous couvrirons lorsque nous aborderons la mise en œuvre de la mémoire virtuelle. 
-C'est la méthode qui est désormais utilisée par Linux, même si `sbrk(2)`_ reste supporté pour assurer la compatibilité.
+C'est la méthode qui est désormais préférée sous Linux, même si `sbrk(2)`_ reste supporté pour assurer la compatibilité.
 Les principes de mise en œuvre de la gestion de la mémoire dynamique présentés ci-dessous sont d'application dans les deux cas.
 
 Contraintes
@@ -114,7 +118,7 @@ On mesure la qualité d'un algorithme de gestion de mémoire dynamique selon **t
 
 **Deuxièmement**, l'algorithme doit utiliser la mémoire disponible de manière *efficace*. Il doit pour cela réduire la *fragmentation*. On distingue la fragmentation externe et la fragmentation interne :
 
-- La fragmentation externe mesure à quel point l'espace mémoire complet est fragmenté avec de nombreuses zones libres intercalées entre des zones réservées. On peut voir un exemple de deux heaps dans l'illustration ci-dessous. Les espaces alloués sont représentés en jaune. Dans la heap du haut, on observe que l'espace disponible est fragmenté en de nombreux *trous* entre les espaces alloués. Une requête d'allocation, représentée en vert, ne peut pas être servie car il n'existe pas de trou de taille suffisante pour la placer. Il est donc nécessaire, dans ce cas, d'augmenter la taille du :term:`heap`. En revanche, dans la heap du dessous, l'espace disponible est réparti en de moins nombreux trous et il est possible de répondre à la demande d'allocation directement.
+- La fragmentation externe mesure à quel point l'espace mémoire complet est fragmenté avec de nombreuses zones libres intercalées entre des zones réservées. On peut voir un exemple de deux heaps dans l'illustration ci-dessous. Les espaces alloués sont représentés en jaune. Dans la heap du haut, on observe que l'espace disponible est fragmenté en de nombreux *trous* entre les espaces alloués. Une requête d'allocation, représentée en vert, ne peut pas être servie car il n'existe pas de trou de taille suffisante pour la placer. Il est donc nécessaire, dans ce cas, d'augmenter la taille du :term:`heap`. En revanche, dans la heap du dessous, l'espace disponible est réparti en de moins nombreux trous et il est possible de répondre à la demande d'allocation sans augmenter la taille du :term:`heap`.
 
 .. figure:: figures/fragmentation.png
    :align: center
@@ -124,25 +128,26 @@ On mesure la qualité d'un algorithme de gestion de mémoire dynamique selon **t
 
 .. note:: La défragmentation n'est pas une option
 
- On pourrait être tenté de chercher un mécanisme pour revisiter l'allocation des zones allouées dans le but de réduire la fragmentation, par exemple en décalant les blocs pour éliminer zones vides.
+ On pourrait être tenté de chercher un mécanisme pour revisiter l'allocation des zones allouées dans le but de réduire la fragmentation, par exemple en décalant les blocs pour éliminer des zones vides.
  Cela n'est malheureusement pas possible dans ce contexte : les pointeurs vers les zones allouées ont déjà été retournés à l'application par `malloc(3)`_ et il n'est plus possible de les changer.
  Il faut donc prendre en compte l'objectif de réduction de la fragmentation dès le départ, lors des appels à `malloc(3)`_ et `free(3)`_.
 
 **Troisièmement**, les espaces mémoires réservés par des appels `malloc(3)`_ successifs doivent être idéalement proches les uns des autres. Cette propriété de *localité* est importante pour maximiser l'utilisation du cache du processeur, dont l'utilité dépend de cette notion de localité. 
-De façon générale, il est recommandé de suivre le principe : les données allouées de façon proche dans le temps doivent être proches en mémoire, et les données similaires (de même taille) doivent aussi être proches en mémoire car dans les deux cas il y a une probabilité importante qu'elles soient accédées ensemble.
+De façon générale, il est recommandé de suivre le principe : les données allouées de façon proche dans le temps doivent être proches en mémoire, et les données similaires (de même taille) doivent aussi être proches en mémoire car dans les deux cas il y a une probabilité importante qu'elles soient accédées lors du même traitement, de manière proche dans le temps.
 Les principes (simplifiés) du fonctionnement d'un cache sont détaillés ci-dessous pour en comprendre les raisons.
+Nous verrons le fonctionnement du cache de manière plus poussée dans un prochain chapitre.
 
 .. note:: Le principe de localité et le cache du processeur
 
  Pour comprendre le principe de localité il nous faut comprendre le principe de cache.
  Dans notre modèle de système informatique présenté précédemment, nous avons considéré que le processeur effectuait des opérations de lecture et d'écriture directement vers la mémoire principale.
- L'évolution de la technologie a été telle que désormais la vitesse d'exécution d'un processeur est très largement supérieure à la vitesse à laquelle ou peut accéder à la mémoire : un processeur peut ainsi attendre des centaines de cycles avant de recevoir le résultat d'une opération de lecture en mémoire.
+ L'évolution de la technologie a été telle que désormais la vitesse d'exécution d'un processeur est très largement supérieure à la vitesse à laquelle on peut accéder à la mémoire : un processeur peut ainsi attendre des centaines de cycles avant de recevoir le résultat d'une opération de lecture en mémoire.
  Pour pallier ce problème, les processeurs sont équipés de *mémoire cache*.
  Cette mémoire est plus performante que la mémoire principale : sa latence d'accès est plus faible. 
  Elle est aussi beaucoup plus chère.
  La mémoire cache ne contient donc qu'un petit sous-ensemble des données utilisées par le programme, sous forme de lignes de cache dont la taille est généralement de quelques douzaines d'octets (par exemple, 64 octets).
- La mémoire principale n'est utilisée que si l'adresse lue n'est pas déjà présente dans le cache.
- En pratique, une grande partie des accès à la mémoire est servie par le cache grâce à la localité des accès : localité temporelle (une même donnée est lue plusieurs fois dans un intervalle de temps court) et la localité spatiale (si une donnée est lue alors il y a une forte probabilité que la donnée présente dans les octets suivants le soit aussi -- par exemple lors du parcours d'une structure de données).
+ La mémoire principale n'est accédée que si l'adresse lue n'est pas déjà présente dans le cache.
+ En pratique, une grande partie des accès à la mémoire est servie par le cache grâce à la localité des accès : localité temporelle (une même donnée est lue plusieurs fois dans un intervalle de temps court) et la localité spatiale (si une donnée est lue alors il y a une forte probabilité que la donnée présente dans les octets suivants le soit aussi -- par exemple lors du parcours d'une structure de données ou d'un tableau).
  
  .. Afin de favoriser la localité et donc l'utilité de la mémoire cache, il est préférable que des appels à `malloc(3)`_ successifs renvoient des zones mémoires qui se jouxtent, et qui auront ainsi plus de chance d'être placées dans la même ligne de cache.
 
@@ -156,10 +161,10 @@ Il existe de très nombreux algorithmes de gestion de la mémoire dynamique, don
 L'objectif de ce cours n'est pas de les présenter de façon exhaustive mais d'illustrer le compromis entre performance, localité, et efficacité de l'utilisation de la mémoire avec des exemples simples.
 Ce sujet permet par ailleurs de montrer un exemple concret de la séparation entre mécanisme et politique, typique de la philosophie des systèmes UNIX.
 
-Dans les descriptions ci-dessous, on considèrera que la mémoire est divisée en cases pouvant contenir chacune un mot long, c'est à dire soit un entier soit une adresse.
+Dans les descriptions ci-dessous, on considèrera que la mémoire est divisée en cases pouvant contenir chacune un mot long, c'est à dire soit un entier soit une adresse sur 8 octets (64 bits).
 Un *bloc* est composé de plusieurs mots contigus.
 Pour chaque bloc, il est nécessaire de conserver des méta-données de deux types : la longueur de ce bloc, et un *drapeau* indiquant s'il s'agit d'un bloc réservé ou d'un bloc libre.
-Une méthode simple pour stocker les méta-données est de réserver un mot dédié sité avant le bloc de données proprement dit, comme l'illustre la figure ci-dessous.
+Une méthode simple pour stocker les méta-données est de réserver un mot dédié situé avant le bloc de données proprement dit, comme l'illustre la figure ci-dessous.
 Dans cet exemple, le mot de méta-données (*header* en anglais), en jaune, augmente donc de une case l'espace nécessaire pour héberger la zone demandée de 4 blocs, en vert, donc l'adresse retournée sera ``p``.
 Ici la taille du bloc stockée dans le header sera de 5 mots (on indique 5 ici, mais c'est bien ``5*sizeof(int*)`` qui est stocké), et le bloc sera marquée comme réservée.
 
@@ -179,54 +184,55 @@ Utilisation d'une liste implicite
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 L'algorithme le plus simple utilisant le principe de header dédiés utilise une liste implicite.
-Cet algorithme peut trouver un bloc libre d'une taille demandé, s'il existe, en suivant un à un les cases de header.
+Cet algorithme peut trouver un bloc libre d'une taille demandé, si il existe, en suivant un à un les cases de header.
 Il parcoure ainsi l'ensemble des blocs réservés et libres, comme illustré par la figure ci-dessous.
 
 .. figure:: figures/malloc_imp2.png
    :align: center
    :scale: 20
 
-Le parcours de cette liste peut ressembler alors au pseudo-code suivant, où ``p`` est un pointeur vers une case mémoire et ``start`` le début du heap :
+Le parcours de cette liste peut ressembler alors au pseudo-code suivant, où ``h`` est un pointeur vers une case mémoire contenant un header et ``start`` le début du heap :
 
 .. code-block:: c
 
-   p = start; 
-   while (p < end &&           // fin de liste ?
-          ((*p & 0x1) != 0 ||  // déjà alloué
-           *p <= len))         // trou trop petit
-       p = p + (*p & ~0x1);    // progresse vers le prochain bloc
+   h = start; 
+   while (h < end &&           // fin de liste ?
+          ((*h & 0x1) != 0 ||  // déjà alloué
+           *h <= len))         // trou trop petit
+       h = h + (*h & ~0x1);    // progresse vers le prochain bloc
 
 On notera ici l'utilisation conjointe d'opérateurs binaires (``&``)  pour accéder à la valeur du bit de poids faible du header, et des opérateurs logiques (``&&`` et ``||``).
 Il ne faut pas les confondre !
 
-Le parcours de la liste va trouver, s'il existe, un espace assez grand pour accueillir la zone dont la création est demandée.
+Le parcours de la liste va trouver, si il existe, un espace assez grand pour accueillir la zone dont la création est demandée.
+Le premier mot de la zone sera son header pointé par ``h``.
 Cette zone peut être trop grande et doit alors être scindé en une zone réservée et une nouvelle zone libre, comme illustré par la figure ci-dessous.
 
 .. figure:: figures/malloc_imp3.png
    :align: center
    :scale: 20
 
-La fonction de placement d'un nouveau bloc de taille ``len`` au pointeur pointé par ``p`` retourné précédemment peut ressembler au pseudo-code suivant :
+La fonction de placement d'un nouveau bloc de taille ``len`` à l'adresse pointée par ``h`` et retournée précédemment peut ressembler au pseudo-code suivant :
 
 .. code-block:: c
 
-   void place_block(ptr p, int len) {
+   void place_block(ptr h, int len) {
      int newsize = len + 1;                // ajoute 1 mot pour le header
-     int oldsize = *p & ~0x1;              // récupère taille actuelle sans bit de poids faible
-     *p = newsize | 0x1;                   // nouvelle taille avec bit de poids faible à 1
+     int oldsize = *h & ~0x1;              // récupère taille actuelle sans bit de poids faible
+     *h = newsize | 0x1;                   // nouvelle taille avec bit de poids faible à 1
      if (newsize < oldsize)                // s'il reste de la place ...
-       *(p + newsize) = oldsize - newsize; // nouveau bloc vide avec la taille restante
+       *(h + newsize) = oldsize - newsize; // nouveau bloc vide avec la taille restante
    }
 
 L'exécution de ce code est assez simple.
-Il faut simplement faire attention ici à ne pas laisser le bit de poids fort pour le header du nouveau bloc.
-Bien entendu, l'adresse qui est retournée au code client n'est pas ``p`` mais ``p-1`` : le header n'a pas a être visible par l'application qui n'a accès qu'au bloc de données proprement dit.
+Il faut simplement faire attention ici à laisser le bit de poids faible pour le header du nouveau bloc ``*(h + newsize)`` à 0, pour indiquer sa disponibilité.
+Bien entendu, l'adresse qui est retournée au code client n'est pas ``h`` mais ``p=h+1`` : le header n'a pas a être visible par l'application qui n'a accès qu'au bloc de données proprement dit.
 
 La manière la plus simple de libérer un bloc avec une liste implicite consiste à passer le drapeau, stocké dans le bit de poids faible du header, à 0.
 Ainsi, un appel à ``free(p)`` peut simplement exécuter ``*(p-1)= *(p-1) & ~0x1;``.
 Cette méthode naïve présente deux désavantages majeurs :
 
-- Tout d'abord, elle ne vérifie pas que le pointeur passé à free() est un pointeur valide. Il est possible de simplement modifier un bit dans un mot utilisé pour stocker des données, ce qui peut entraîner des bogues particulièrement difficile à découvrir. Il est préférable de stopper l'exécution du programme si free() est appelé pour une adresse invalide. Pour cela toutefois, il est nécessaire de parcourir de nouveau la liste depuis le début pour savoir si l'adresse du header ``p-1`` est bien valide. Le coût de free() devient donc O(n) où est le nombre de blocs, et plus O(1).
+- Tout d'abord, elle ne vérifie pas que le pointeur passé à free() est un pointeur valide. Il est possible de simplement modifier un bit dans un mot utilisé pour stocker des données, ce qui peut entraîner des bogues particulièrement difficile à découvrir. Il semble préférable de stopper l'exécution du programme si ``free()`` est appelé pour une adresse invalide. Pour cela toutefois, il est nécessaire de parcourir de nouveau la liste depuis le début pour savoir si l'adresse du header ``p-1`` est bien valide. Le coût de ``free()`` devient donc O(n) où n est le nombre de blocs, et non plus O(1) comme auparavant.
 
 - Ensuite, cette méthode entraîne un problème de *fausse fragmentation*. On peut ainsi plusieurs blocs libres les uns à la suite des autres, mais aucun de ces blocs n'est suffisant pour accueillir une demande d'allocation. Cette situation est illustrée par la figure suivante. Une requête ``malloc(8)`` arrive, et bien qu'il existe deux blocs de tailles 5 et 7 contiguës, il n'y a pas de bloc de taille 9 disponible.
 
@@ -243,15 +249,15 @@ Nous laissons son développement en exercice au lecteur.
 Une seconde approche est de regrouper les zones libres lors du traitement du `free(3)`_.
 Dans l'exemple de la figure précédente, il est possible de regrouper les deux blocs libres pour en former un seul.
 
-Le pseudo-code de la fonction free_block, prenant en argument l'adresse du *header* à libérer, peut être :
+Le pseudo-code de la fonction free_block, prenant en argument l'adresse du *header* à libérer ``h``, peut être :
 
 .. code-block:: c
 
-   void free_block(ptr p) {
-     *p = *p & ~0x1;          // remise à 0 du drapeau
-     next = p + *p;           // calcul de l'adresse du header du bloc suivant
+   void free_block(ptr h) {
+     *h = *h & ~0x1;          // remise à 0 du drapeau
+     next = h + *h;           // calcul de l'adresse du header du bloc suivant
      if ((*next & 0x1) == 0)  // si ce bloc est aussi libre ...
-       *p = *p + *next;       // combiner les blocs
+       *h = *h + *next;       // combiner les blocs
    }
 
 On remarque toutefois que cette méthode est incomplète.
@@ -259,7 +265,7 @@ En effet, elle permet de fusionner un bloc libre avec les blocs qui le suive, ma
 Ce problème est caractéristique d'une liste chaînée simple : on ne sait simplement pas revenir en arrière.
 Il y a deux solutions possibles à ce problème.
 Une première solution est de garder un *historique* des adresses des derniers headers vus lors du parcours (par exemple sur la pile), et de re-parcourir les blocs libres jusqu'à atteindre celui sélectionné, puis ses successeurs.
-Cette solution impose un surcoût en mémoire lors de l'exécution de `free(3)`_ mais ne nécessite pas de modifier 
+Cette solution impose un surcoût en mémoire lors de l'exécution de `free(3)`_ mais ne nécessite pas de modifier la structure de stockage des headers et des blocs en mémoire.
 Une deuxième méthode, plus simple à mettre en œuvre mais entrainant un surcoût d'utilisation mémoire, est d'utiliser un liste chaînée bi-directionnelle.
 Cette méthode est illustrée ci-dessous.
 Elle consiste simplement à répliquer le header avant et après le bloc de données (nécessitant ainsi 2 mots supplémentaires et plus un seul), ce qui permet le parcours, et donc la fusion des blocs libres dans les deux sens.
@@ -277,7 +283,7 @@ L'algorithme de sélection du bloc libre à utiliser présenté et utilisé jusq
 L'opération de recherche s'arrête dès qu'un bloc vide de taille *suffisante* pour héberger la nouvelle allocation est trouvée. 
 On appelle cette politique de placement *first fit*.
 Celle-ci peut prendre un temps linéaire en le nombre de blocs (alloués et libres) mais termine dès qu'un bloc valide est trouvé, et donc assez rapidement en pratique.
-Toutefois, elle présente des désavantages en pratique, car elle entraîne de la fragmentation est n'a pas de bonnes propriétés de localité.
+Toutefois, elle présente des désavantages, car elle entraîne de la fragmentation et n'a pas de bonnes propriétés de localité.
 En effet, les allocations de petits objets ont tendance à s'accumuler au début de la zone mémoire, et lorsque ceux-ci sont libérés il subsiste de nombreux petits blocs libres qui ralentissent les recherches ultérieures.
 Les allocations d'objets de taille plus importante, et en particulier les allocations successives, ne sont pas nécessairement placées dans des zones proches, ce qui entraîne une faible localité.
 
