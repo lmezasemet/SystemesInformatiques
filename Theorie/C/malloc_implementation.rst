@@ -249,7 +249,7 @@ Nous laissons son développement en exercice au lecteur.
 Une seconde approche est de regrouper les zones libres lors du traitement du `free(3)`_.
 Dans l'exemple de la figure précédente, il est possible de regrouper les deux blocs libres pour en former un seul.
 
-Le pseudo-code de la fonction free_block, prenant en argument l'adresse du *header* à libérer ``h``, peut être :
+Le pseudo-code de la fonction ``free_block``, prenant en argument l'adresse du *header* à libérer ``h``, peut être :
 
 .. code-block:: c
 
@@ -323,12 +323,12 @@ Une telle liste est illustrée par la figure suivante, qui présente seulement u
 
 Les blocs libres A, B et C ne sont pas liés dans cet exemple dans l'ordre de leurs adresses.
 Il est donc nécessaire de dupliquer le header de bloc vide au début et à la fin de chaque bloc comme expliqué précédemment, afin de permettre la fusion de blocs vides contigus dans les deux sens.
-L'espace mémoire utilisée (fragmentation interne) est le même que dans le cas d'une liste implicite avec la duplication du header : deux mots supplémentaires sont nécessaires au début et à la fin de chaque bloc alloué.
+L'espace mémoire supplémentaire utilisé (fragmentation interne) est le même que dans le cas d'une liste implicite avec la duplication du header : deux mots supplémentaires sont nécessaires au début et à la fin de chaque bloc alloué.
 En revanche, quatre mots sont nécessaires pour chaque bloc libre.
 Ils servent à stocker les pointeurs vers le bloc successeur et prédécesseur de chaque bloc libre.
 Cela n'a pas d'impact sur la fragmentation interne, puisque ces méta-données sont stockées dans les blocs libres.
 En revanche, la taille minimum de bloc (libre ou alloué) est désormais de 4 mots.
-Il est donc nécessaire, dans cet exemple, d'aligner les allocations de blocs pour qu'ils utilisent un multiple de 4 mots, en utilisant du *padding* si nécessaire.
+.. Il est donc nécessaire, dans cet exemple, d'aligner les allocations de blocs pour qu'ils utilisent un multiple de 4 mots, en utilisant du *padding* si nécessaire.
 
 L'allocation d'un bloc de données avec une liste explicite suit le même principe qu'avec une liste implicite, et peut obéir à des politiques similaires.
 Il est nécessaire, bien entendu, de maintenir les propriétés de la liste doublement chaînée.
@@ -355,11 +355,11 @@ Utilisation de listes multiples
 
 Les mécanismes et politiques de gestion de la mémoire dynamique qui ont été présentées ne font pas de distinction entre les demandes d'allocation de blocs de petite et de grande tailles.
 Cela pose un inconvénient double.
-Tout d'abord, le temps de recherche d'un bloc vide augmente linéairement avec le nombre de blocs (total pour une liste implicite, ou seulement libres pour une liste explicite).
+Tout d'abord, le temps de recherche d'un bloc vide augmente linéairement avec le nombre de blocs (le nombre de blocs total pour une liste implicite, ou seulement le nombre de blocs libres pour une liste explicite).
 Par ailleurs, le temps de recherche d'un bloc vide de grande taille peut prendre un temps plus important que la recherche d'un bloc vide de petite taille.
 
-Une solution à ces défauts est d'utiliser non pas une, mais plusieurs listes.
-Chaque liste correspond alors à une classe de taille.
+Une solution à ces défauts est d'utiliser non pas une mais plusieurs listes.
+Chaque liste correspond alors à une *classe de taille*.
 Il peut ainsi y avoir une liste pour les blocs de taille 1, 2, 3, ou 4 octets, puis des listes pour les tailles correspondant aux puissances de 2 : 8, 16, 32, 64, etc. octets.
 La recherche d'une zone libre est faite dans la liste correspondant à la taille immédiatement supérieure à la taille demandée : une demande d'allocation pour un bloc de taille 67 octets sera ainsi servi en utilisant la liste des blocs libres de taille 128, c'est à dire parmi les blocs libres de 65 à 128 octets.
 
