@@ -77,19 +77,19 @@ La fonction `sem_post(3)`_ quant à elle peut schématiquement s'implémenter co
     s->val=s->val+1;
     if(s.val<=0)
     {
-      // Remove one thread(T) from s.queue;
-      // Mark Thread(T) as ready to run;
+      // Remove one thread T from s.queue;
+      // Mark thread T as ready to run;
     }
   }
 
-Ces deux opérations sont bien entendu des opérations qui ne peuvent s'exécuter simultanément. Leur implémentation réelle comprend des sections critiques qui doivent être construites avec soin. Le pseudo-code ci-dessus ignore ces sections critiques. Des détails complémentaires sur l'implémentation des sémaphores peuvent être obtenus dans livre sur les systèmes d'exploitation [Stallings2011]_ [Tanenbaum+2009]_.
+Ces deux opérations sont bien entendu des opérations qui ne peuvent pas s'exécuter simultanément. Leur implémentation réelle comprend des sections critiques qui doivent être construites avec soin. Le pseudo-code ci-dessus ignore ces sections critiques. Des détails complémentaires sur l'implémentation des sémaphores peuvent être obtenus dans des livres de référence sur les systèmes d'exploitation [Stallings2011]_ [Tanenbaum+2009]_.
 
 La meilleure façon de comprendre leur utilisation est d'analyser des problèmes classiques de coordination qui peuvent être résolus en utilisant des sémaphores.
 
 Exclusion mutuelle
 ------------------
 
-Les sémaphores permettent de résoudre de nombreux problèmes classiques. Le premier est celui de l'exclusion mutuelle. Lorsqu'il est initialisé à ``1``, un sémaphore peut être utilisé de la même façon qu'un :term:`mutex`. En utilisant des sémaphores, une exclusion mutuelle peut être protégée comme suit :
+Les sémaphores permettent de résoudre de nombreux problèmes classiques. Le premier est celui de l'exclusion mutuelle. Lorsqu'il est initialisé à ``1``, un sémaphore peut être utilisé de la même façon qu'un :term:`mutex`. En utilisant des sémaphores, l'exclusion mutuelle pour une section critique peut être garantie comme suit :
 
 
 .. code-block:: c
