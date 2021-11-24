@@ -263,7 +263,7 @@ Une première solution à ce problème est d'utiliser un mutex et un sémaphore 
  sem_t db;  // accès à la db
  int readcount=0; // nombre de readers
 
- sem_init(&db, NULL, 1).
+ sem_init(&db, 0, 1).
 
 La solution utilise une variable partagée : ``readcount``. L'accès à cette variable est protégé par ``mutex``. Le sémaphore ``db`` sert à réguler l'accès des `writers` à la base de données. Le mutex est initialisé comme d'habitude par la fonction `pthread_mutex_init(3posix)`_. Le sémaphore ``db`` est initialisé à la valeur ``1``. Le `writer` est assez simple :
 

@@ -8,7 +8,7 @@
 Ordonnancement (Scheduling)
 ===========================
 
-Nous avons vu dans le chapitre précédent qu'un système d'exploitation comme Linux pouvait supporter de nombreux threads (appartenant à divers processus) avec un nombre limité (ou même unique) de processeur(s).
+Nous avons vu dans le chapitre précédent qu'un système d'exploitation comme Linux pouvait supporter de nombreux threads (appartenant à divers processus) avec un nombre limité de (ou même un seul) processeur(s).
 Un processeur n'exécute pourtant qu'un seul thread à la fois.
 Le partage des processeurs est rendu possible par un mécanisme de *partage de temps* : le système d'exploitation peut basculer de l'utilisation d'un processeur par un thread à une utilisation par un autre thread.
 L'enchaînement rapide de l'exécution des différents threads sur les processeurs donne l'illusion à l'utilisateur que ceux-ci s'exécutent simultanément.
@@ -31,7 +31,7 @@ Un thread exécute ses instructions par phases, alternant deux types d'opératio
 
 À la suite de l'appel bloquant, le thread ne peut pas faire de progrès tant que le résultat de l'opération n'est pas disponible.
 
-La longueur des burst CPUs, et la fréquence des opérations bloquantes comme les entrée/sorties, peut varier fortement d'une application à l'autre.
+La longueur des burst CPUs, et la fréquence des opérations bloquantes comme les entrées/sorties, peut varier fortement d'une application à l'autre.
 Ceci est illustré par la figure suivante.
 
  .. figure:: figures/cpu_bursts.png
@@ -39,11 +39,11 @@ Ceci est illustré par la figure suivante.
     :scale: 20
 
 Dans cet exemple, une application de copie de fichier comme `cp(1)`_ effectue de nombreuses opérations d'entrée/sortie pour lire et écrire un fichier à copier en utilisant le système de fichiers, entremêlées de bursts CPU courts.
-Une application de calcul numérique présentera, au contraire, des bursts CPU très longs avec des entrée/sorties seulement au début et à la fin des calculs.
+Une application de calcul numérique présentera, au contraire, des bursts CPU très longs avec des entrées/sorties seulement au début et à la fin des calculs.
 
 Un application peut tout à fait être composée de plusieurs threads présentant des caractéristiques différentes.
-Par exemple, dans un jeu, le thread chargé de prendre en compte les commandes du joueur (à l'aide du clavier ou d'une manette) présentera souvent des bursts CPU courts et de longues périodes d'attente, tandis que le thread en charge de l'intelligence artificielle du jeu pourra avoir des bursts CPU périodiques mais de durée régulière.
-Enfin, le thread en charge de l'affichage pourrait utiliser des bursts CPU longs pour préparer la visualisation d'une scène suivie de son envoi au dispositif d'affichage.
+Par exemple, dans un jeu vidéo de simulation, le thread chargé de prendre en compte les commandes du joueur (à l'aide du clavier ou d'une manette) présentera souvent des bursts CPU courts et de longues périodes d'attente, tandis que le thread en charge de l'intelligence artificielle du jeu pourra avoir des bursts CPU périodiques mais de durée régulière.
+Enfin, le thread en charge de l'affichage pourrait utiliser des bursts CPU longs pour préparer la visualisation d'une scène suivie de sa mise au dispositif d'affichage par le principe de DMA vu en introduction.
 
 L'alternance entre les bursts CPU et les phases d'attente est mise en œuvre par l'alternance de chaque thread entre différents états, permis par le mécanisme de changement de contexte.
 
@@ -72,7 +72,7 @@ Les threads en état Blocked sont associés à une structure de donnée du noyau
 Certaines de ces structures d'attente n'ont d'utilité que pour un seul thread, par exemple lorsque ce thread a demandé une lecture vers le système de fichiers.
 D'autres peuvent contenir plusieurs threads en attente.
 C'est le cas, par exemple, d'une structure d'attente pour un sémaphore.
-Il peut y avoir effectivement plusieurs threads ayant appelé `sem_wait(3posix)`_ (T12, T4 et T10).
+Il peut y avoir effectivement plusieurs threads ayant appelé `sem_wait(3posix)`_ (ici T12, T4 et T10).
 Un appel à `sem_post(3posix)`_ va libérer l'un de ces threads, qui passera alors en état Ready.
 
 .. note:: Pas de garantie d'ordre sur le passage de l'état Blocked à l'état Ready !
@@ -88,7 +88,7 @@ Un thread passe de l'état Running à l'état Ready lorsqu'il libère le process
 On observe qu'avec uniquement les mécanismes définis précédemment, un thread qui ne génère aucun appel système pourrait rester dans l'état Running indéfiniment.
 C'est le cas, par exemple, d'un thread bloqué dans une boucle infinie ne comportant pas d'appel à la librairie standard.
 Si tous les processeurs venaient à être bloqués par des threads dans cette situation, alors la machine devient inutilisable.
-Par ailleurs, sans même considérer des boucles infinies, le temps d'occupation du processeur par le thread en cours d'exécution (son CPU burst) pourrait être particulièrement long, ce qui peut être problématique lorsque d'autres threads sont sujets à des contraintes de réactivité (par exemple, la réaction aux commandes utilisateurs ou la visualisation).
+Par ailleurs, sans même considérer des boucles infinies, le temps d'occupation du processeur par le thread en cours d'exécution (son CPU burst) pourrait être particulièrement long, ce qui peut être problématique lorsque d'autres threads sont sujets à des contraintes de réactivité (par exemple, la réaction aux commandes utilisateurs ou la mise à jour de la visualisation).
 
 .. Un thread dans l'état Running peut tout d'abord générer volontairement un appel système bloquant pour passer en état Ready, libérant de facto le processeur qu'il utilise.
 .. Il faut utiliser pour cela la fonction `pthread_yield(3)`_ qui utilise elle même l'appel système `sched_yield(2)`_.
@@ -107,7 +107,7 @@ La dernière transition consiste à restaurer l'état précédemment sauvegardé
 Mise en œuvre du scheduler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-La politique d'ordonnancement, que nous appellerons par la suite uniquement le *scheduler* par simplicité, est donc en charge de la prise de décision aux deux moments suivants :
+La politique d'ordonnancement, que nous appellerons par la suite uniquement de son nom anglais le *scheduler* par simplicité, est donc en charge de la prise de décision aux deux moments suivants :
 
 - (1) Lorsqu'un processeur devient disponible, suite au passage d'un thread en mode Blocked, le scheduler doit sélectionner un thread dans l'état Ready et le promouvoir à l'état Running sur ce processeur.
 - (2) Lorsqu'une interruption périodique est traité, le scheduler doit décider si un thread actuellement en état Running doit être préempté pour passer en état Ready.
@@ -120,23 +120,24 @@ Objectifs
 """""""""
 
 Il n'existe pas de scheduler parfait convenant à toutes les applications.
-Pour s'en convaincre, considérons les deux applications que sont la copie de fichier et l'application de calcul dans notre exemple précédent.
+Pour s'en convaincre, considérons les deux applications que sont la copie de fichier et l'application de calcul de notre exemple précédent.
 
 La priorité de l'application de copie de fichier est de subir le moins d'attente possible entre la disponibilité d'une valeur de retour d'un appel système vers le système de fichier, et l'envoi du prochain appel système pour continuer la copie, et éviter de ralentir l'opération de copie dans son ensemble.
 Pour ce thread, le délai d'attente entre sa mise en état Ready et l'obtention d'un processeur doit être la plus faible possible.
 
 Pour l'application de calcul, le plus important est de pouvoir exécuter les instructions du long CPU burst avec le moins d'interruptions possibles.
 En effet, un changement de contexte est du temps perdu pour réaliser des opérations utiles (i.e., progresser dans la simulation).
-Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a obtenu le processeur entre temps.
+
+Par ailleurs, un thread qui est interrompu et replacé plus tard sur le processeur sera soumis à un phénomène de *cache froid* : les données qui étaient dans le cache, et donc accessibles avec un temps d'accès faible avant le changement de contexte, ont pu être remplacées par des données à des adresses différentes, utilisées par le thread qui a utilisé le processeur entre temps.
 Peupler de nouveau le cache avec les données nécessaire au calcul peut nécessiter de coûteux accès en mémoire principale et ralentir l'exécution.
 
-Si l'on décide de privilégier l'application de copie, il est souhaitable d'interrompre le thread de l'application de calcul, mais cela va au détriment de ce dernier.
-À l'inverse, si on choisit de privilégier l'opération de calcul, alors l'opération de copie sera ralentie.
+Si l'on décide de privilégier l'application de copie, il est souhaitable d'interrompre le thread de l'application de calcul, mais cela va être au détriment de ce dernier.
+À l'inverse, si on choisit de privilégier l'opération de calcul, alors l'opération de copie pourrait être ralentie.
 
 On peut définir cinq principaux critères pour mesurer la performance d'un scheduler :
 
 - Du **point de vue du système** dans son ensemble tout d'abord :
- - On veut pouvoir maximimiser l'utilisation du ou des processeur(s), c'est à dire la proportion du temps où ceux-ci exécutent des instructions des applications. Les opérations de changement de contexte ne sont évidemment pas considérées comme du travail utile pour ce critère.
+ - On veut pouvoir maximiser l'utilisation du ou des processeur(s), c'est à dire la proportion du temps où ceux-ci exécutent des instructions des applications. Les opérations de changement de contexte ne sont évidemment pas considérées comme du travail utile pour ce critère.
  - On peut vouloir maximiser le débit applicatif, c'est à dire le nombre de processus qui peuvent terminer leur exécution en une unité de temps donné (par exemple en une heure).
 - D'autres critères sont applicables, cette fois-ci **du point de vue de chaque application** individuellement. On pourra par ailleurs s'intéresser à la distribution de ces métriques pour l'ensemble des applications, afin de savoir s'il existe un déséquilibre entre la métrique telle que perçue par une application et la même métrique perçue par une autre application :
  - Une application peut souhaiter minimiser son temps total d'exécution, entre la création du processus et sa terminaison. Ce critère n'est pas nécessairement valide pour tous les types d'applications, par exemple il n'a que peu de sens pour une application interactive (par exemple, un shell), mais il est important pour des applications de calcul ou l'exécution d'un script par exemple.
@@ -190,13 +191,13 @@ C'est à dire qu'un thread utilisant le CPU pour de courtes périodes de temps r
 Un scheduler estimant SJF pourrait ainsi conserver dans une structure de données la durée des *x* derniers CPU bursts de chaque thread.
 En appliquant une moyenne sur cette durée, le scheduler peut alors tenter de prédire la durée du prochain CPU burst, et choisir le thread dont la durée prédite est la plus courte.
 
-On note toutefois que, si SJF est optimal en terme de temps d'attente moyen, il n'offre que peu de propriétés d'équité.
+On note toutefois que, si SJF est optimal en terme de temps d'attente moyen, il n'offre aucune garantie d'équité.
 Si il existe de nombreux threads avec des CPU bursts à venir courts (ou prédits comme tels) alors un thread avec un CPU burst long (ou prédit comme tel) pourrait ne jamais avoir accès au processeur, ou bien n'y avoir accès que bien plus tard.
 
 Le scheduler préemptif RR (Round Robin)
 """""""""""""""""""""""""""""""""""""""
 
-Un scheduler préemptif peut choisir de *préempter* un thread en cours d'exécution sur un processeur, c'est à dire de passer ce thread en état Ready pour libérer le processeur pour un autre thread.
+Un scheduler préemptif peut choisir de *préempter* un thread en cours d'exécution sur un processeur, c'est à dire de forcer le passage de ce thread en état Ready pour libérer le processeur pour un autre thread.
 Une décision de préemption peut être prise lorsque le système d'exploitation reprend la main sur le processeur lors de l'arrivée d'une interruption.
 Une horloge système dédiée à cet usage génère une interruption matérielle (tick) de manière périodique.
 
@@ -220,7 +221,7 @@ En d'autres termes, le temps d'attente pour un thread sera toujours borné par l
 
 On voit toutefois que ce scheduler n'est pas très efficace pour plusieurs raisons :
 
-- Premièrement, il génère un grand nombre de changements de contexte (7 dans notre exemple). Comme discuté précédemment, non seulement ces changements de contexte nécessitent du temps processeur qui n'est pas utilisé pour des opérations utiles, mais ils entrainent surtout un phénomène de cache froid à chaque redémarrage d'un thread sur le processus à la suite d'un autre ayant rempli le cache avec ses propres données.
+- Premièrement, il génère un grand nombre de changements de contexte (7 dans notre exemple). Comme discuté précédemment, non seulement ces changements de contexte nécessitent du temps processeur qui n'est pas utilisé pour des opérations utiles, mais ils entrainent aussi un phénomène de cache froid à chaque redémarrage d'un thread sur le processus à la suite d'un autre ayant rempli le cache avec ses propres données.
 - Deuxièmement, comme le burst CPU d'un thread peut être interrompu avant sa complétion, il n'y a pas de relation directe entre le temps d'attente et le temps de réponse, et ce dernier peut devenir particulièrement long. Par exemple, bien que T3 ait un temps d'attente de 3 unités de temps, son temps de réponse (le temps entre son placement en état Ready et la fin de son burst CPU) est de 11 unités de temps.
 - Enfin, il n'y a pas de distinction entre les threads ayant besoin du processeur pour des bursts courts ou ceux ayant des bursts longs, ce qui peut conjointement réduire la réactivité des threads interactifs ou effectuant de nombreuses entrées/sorties et diminuer la performance de ceux réalisant des calculs.
 
@@ -232,7 +233,7 @@ On voit toutefois que ce scheduler n'est pas très efficace pour plusieurs raiso
  Par exemple, les versions initiales de Linux utilisaient une fréquence d'horloge de 100 Hz (100 interruptions par seconde) tandis que des versions ultérieures permettaient une fréquence plus élevée de 1.000 Hz.
  Une fréquence plus élevée permet de diminuer le temps d'attente moyen et augmente la réactivité du système.
  Elle entraîne une utilisation processeur par le système plus élevée, ce qui est particulièrement problématique pour les systèmes embarqués ou pour les ordinateurs portables alimentés par une batterie.
- Une fréquence élevée peut aussi augmenter le risque de pollution de caches dues aux préemptions plus important.
+ Une fréquence élevée peut aussi augmenter le risque de pollution de caches dues aux préemptions.
  Les versions modernes de Linux peuvent adapter la fréquence de l'horloge pour ne pas constamment réveiller un processeur lorsqu'il n'y a pas de tâche en état Ready, ou bien ne pas interrompre une tâche en état Running sur un processeur s'il n'y a pas de tâche en état Ready en attente pour le remplacer.
 
 Schedulers à priorité
@@ -267,10 +268,10 @@ Ce thread pourra obtenir une priorité de base plus élevé, mais associée à u
 .. note:: Scheduler à priorité et synchronisation des threads
 
  L'utilisation des primitives de synchronisation comme les mutex peut aller à l'encontre des priorités utilisées par le scheduler.
- Considérons par exemple le cas de deux threads TA et TB.
+ Considérons le cas de deux threads TA et TB.
  TA doit répondre à des requêtes reçues depuis le réseau en mettant à jour une structure de données partagée, par exemple un graphe.
  Cette opération doit terminer le plus rapidement possible et ce thread est donc assigné à une priorité élevée.
- TB parcours de façon périodique la structure de données commune afin d'en extraire des statistiques (par exemple, toutes les 30 secondes).
+ TB parcours de façon périodique la structure de données commune afin d'en extraire des statistiques (par exemple, toutes les 2 secondes).
  TB n'a pas de contrainte forte sur son temps de réponse mais l'opération qu'il exécute peut être assez longue.
  On assigne donc une priorité faible à TB.
  TA et TB accèdent à la structure de donnée en exclusion mutuelle, en utilisant un mutex *m*.

@@ -7,10 +7,10 @@
 Mise en oeuvre de la synchronisation
 ====================================
 
-Nous avons vu dans les chapitres précédents comment utiliser les constructions de synchronisation que sont les mutex et les sémaphores, fournies par les librairies POSIX.
-Nous allons nous intéresser dans ce chapitre à comment ces constructions sont implémentées.
+Nous avons vu dans les chapitres précédents comment utiliser les constructions de synchronisation que sont les mutex et les sémaphores fournies par les librairies POSIX.
+Nous allons nous intéresser dans ce chapitre à la façon dont ces constructions sont mises en œuvre.
 
-Nous mettrons l'emphase plus particulièrement sur la résolution du problème de l'exclusion mutuelle, utile pour protéger l'accès aux structures de données utilisées pour la synchronisation (e.g. protéger l'accès à l'état d'un mutex ou le compteur associé à un sémaphore).
+Nous mettrons l'emphase plus particulièrement sur la résolution du problème de l'exclusion mutuelle, utile pour protéger l'accès aux structures de données utilisées pour la synchronisation (e.g. protéger l'accès à l'état d'un mutex ou au compteur associé à un sémaphore).
 Les mécanismes que nous verrons permettent de façon générale de protéger l'accès à des sections de code devant s'exécuter de manière exclusive les unes des autres.
 
 .. La mise en attente des threads en état Blocked par le scheduler, lorsque ceux-ci
@@ -34,10 +34,11 @@ Les mécanismes que nous verrons permettent de façon générale de protéger l'
 .. possible sources:
 .. - https://www.cs.virginia.edu/~cr4bd/4414/S2019/slides/20190212--slides-1up.pdf
 
-Dans un premier temps, nous verrons des algorithmes "classiques" proposés pour résoudre le problème de l'exclusion mutuelle en utilisant uniquement des opérations de lecture et d'écriture en mémoire.
-Ces algorithmes ont un intérêt historique : ils ne sont pas exploitables (ou alors avec un surcoût très élevé) sur les architectures modernes.
-Il est toutefois intéressant de les étudier pour comprendre le problème de l'exclusion mutuelle.
-Par la suite, nous verrons des algorithmes utilisant des instructions spécifiques introduites dans les processeurs pour résoudre les problèmes de synchronisation, et étudierons leur performance.
+Dans un premier temps, nous verrons des algorithmes "traditionnels" proposés pour résoudre le problème de l'exclusion mutuelle.
+Ces algorithmes utilisent uniquement des opérations de lecture et d'écriture en mémoire.
+Ils ont un intérêt historique : ils ne sont pas exploitables (ou alors avec un surcoût très élevé) sur les architectures de processeurs modernes.
+Il est toutefois intéressant de les étudier pour comprendre le problème de l'exclusion mutuelle et ses variations.
+Par la suite, nous verrons des algorithmes utilisant des instructions spécifiques disponibles dans le jeu d'instruction des processeurs et permettent de résoudre ces problèmes de synchronisation, et nous étudierons leur performance.
 
 Algorithme de Peterson
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -51,13 +52,12 @@ Algorithme de Peterson
 .. todo:: Autres algorithmes [Alagarsamy2003]_
 
 Le problème de l'exclusion mutuelle a intéressé de nombreux informaticiens depuis le début des années 1960s [Dijkstra1965]_ et différentes solutions à ce problème ont été proposées.
-Plusieurs d'entre elles sont analysées en détails dans [Alagarsamy2003]_.
+Plusieurs d'entre elles sont analysées en détails dans la littérature [Alagarsamy2003]_.
 Dans cette section, nous nous concentrerons sur une de ces solutions, proposée par G. Peterson en 1981 [Peterson1981]_.
 Cette solution permet à plusieurs threads de coordonner leur exécution de façon à éviter une violation de section critique en utilisant uniquement des variables accessibles à tous les threads.
-Nous verrons tout d'abord des solutions pour coordonner l'accès à leur section critique pour deux threads.
-La solution proposée par Peterson permet de gérer `N` threads [Peterson1981]_ mais nous nous limiterons à sa version permettant de coordonner deux threads.
+Nous allons étudier une construction graduelle de cette solution pour coordonner l'accès aux sections critiques pour seulement deux (2) threads, puis nous étudierons ensuite son extension pour `N` threads.
 
-Une première solution permettant de coordonner deux threads en utilisant des variables partagées pourrait être de s'appuyer sur une variable qui permet de déterminer quel est le thread qui peut entrer en section critique.
+Une première solution permettant de coordonner deux threads en utilisant des variables partagées pourrait être de s'appuyer sur une variable permettant de déterminer quel est le thread qui peut entrer en section critique.
 Dans l'implémentation ci-dessous, la variable partagée ``turn`` est utilisée par les deux threads et permet de coordonner leur exécution.
 ``turn`` peut prendre les valeurs ``0`` ou ``1``.
 Le premier thread exécute la boucle ``while (turn != 0) { }``.
@@ -80,7 +80,7 @@ En effet, si ``turn`` vaut ``1`` au début de la boucle ``while (turn != 0) { }`
   section_critique();
   turn=0;
 
-Il est intéressant d'analyser ces deux threads en détails pour déterminer si ils permettent d'éviter une violation de section critique et respectent les 4 contraintes précisées plus haut.
+Il est intéressant d'analyser ces deux threads en détails pour déterminer si ils permettent d'éviter une violation de section critique. 
 Dans ces deux threads, pour qu'une violation de section critique puisse se produire, il faudrait que les deux threads passent en même temps la boucle ``while`` qui précède la section critique.
 Imaginons que le premier thread est entré dans sa section critique.
 Puisqu'il est sorti de sa boucle ``while``, cela implique que la variable ``turn`` a la valeur ``0``.
@@ -93,11 +93,12 @@ Elle ne s'arrêtera que si la valeur de ``turn`` change.
 Or, le premier thread ne pourra changer la valeur de ``turn`` que lorsqu'il aura quitté sa section critique.
 Cette solution évite donc toute violation de la section critique.
 Malheureusement, elle ne fonctionne que si il y a une alternance stricte entre les deux threads.
-Le second s'exécute après le premier qui lui-même s'exécute après le second, ... Cette alternance n'est évidemment pas acceptable.
+Le second s'exécute après le premier, qui lui-même s'exécute après le second, ... Cette nécessité alternance n'est évidemment pas acceptable : on souhaite que le premier thread puisse exécuter plusieurs sections critiques à la suite sans dépendre des actions du second thread.
 
 Analysons une seconde solution.
 Celle-ci utilise un tableau ``flag`` contenant deux drapeaux, un par thread.
 Ces deux drapeaux sont initialisés à la valeur ``false``.
+Ils permettent aux threads d'indiquer leur *volonté* de rentrer en section critique.
 Pour plus de facilité, nous nommons les threads en utilisant la lettre ``A`` pour le premier et ``B`` pour le second.
 Le drapeau ``flag[x]`` est modifié par le thread ``x`` et sa valeur est testée par l'autre thread.
 
@@ -143,7 +144,7 @@ Supposons que ``flag[A]`` et ``flag[B]`` ont la valeur ``false`` et que les deux
 Chaque thread va pouvoir traverser sa boucle ``while`` sans attente puis seulement mettre son drapeau à ``true``.
 A cet instant il est trop tard et une violation de section critique se produira.
 Cette violation a été illustrée sur une machine multiprocesseur qui exécute deux threads simultanément.
-Elle est possible également sur une machine monoprocesseur.
+Elle est possible également sur une machine monoprocesseur, où il n'est pas possible que les deux threads souhaitent entrer dans leur section critique en même temps car un seul thread peut être exécuté à un moment donné.
 Dans ce cas, il suffit d'imaginer que le thread ``A`` passe sa boucle ``while`` et est interrompu par le scheduler avant d'exécuter ``flag[A]=true;``.
 Le scheduler réalise un changement de contexte et permet au thread ``B`` de s'exécuter.
 Il peut passer sa boucle ``while`` puis entre en section critique alors que le thread ``A`` est également prêt à y entrer.
@@ -178,7 +179,7 @@ Un :term:`livelock` est un problème extrêmement gênant puisque lorsqu'il surv
 Il peut être très difficile à diagnostiquer et il est important de réfléchir à la structure du programme et aux techniques de coordination entre les threads qui sont utilisées afin de garantir qu'aucun :term:`livelock` ne pourra se produire.
 
 L'algorithme de Peterson [Peterson1981]_ combine les deux idées présentées plus tôt.
-Il utilise une variable ``turn`` qui est testée et modifiée par les deux threads comme dans la première solution et un tableau ``flag[]`` comme la seconde.
+Il utilise une variable ``turn`` qui est testée et modifiée par les deux threads comme dans la première solution et un tableau ``flag[]`` comme dans la seconde.
 Les drapeaux du tableau sont initialisés à ``false`` et la variable ``turn`` peut prendre la valeur ``A`` ou ``B``.
 
 .. code-block:: c
@@ -239,7 +240,7 @@ Cet algorithme nécessite de connaître à l'avance le nombre de threads N qui s
 Le concept fondamental est celui de *niveaux*.
 Il y a N-1 niveaux, et chacun de ces niveaux correspond à une salle d'attente.
 Plus précisément, à chaque niveau, *au moins* un thread doit pouvoir passer mais, si plusieurs threads souhaitent passer le même niveau, alors au moins un d'entre eux doit y rester bloqué.
-Le nombre de thread pouvant passer chaque niveau décroit donc strictement de 1 à chacun d'entre eux : N-1 threads peuvent passer le premier niveau, N-2 peuvent passer le deuxième niveau, et ainsi de suite jusqu'au dernier niveau, pour lequel un seul thread peut passer et ainsi accéder à sa section critique.
+Le nombre de threads pouvant passer chaque niveau décroit donc strictement de 1 à chacun d'entre eux : N-1 threads peuvent passer le premier niveau, N-2 peuvent passer le deuxième niveau, et ainsi de suite jusqu'au dernier niveau, pour lequel un seul thread peut passer et ainsi accéder à sa section critique.
 La figure ci-dessous illustre le principe de l'algorithme du filtre.
 
 .. figure:: figures/filter_algorithm.png
@@ -247,9 +248,11 @@ La figure ci-dessous illustre le principe de l'algorithme du filtre.
    :scale: 20
 
 La mise en œuvre de chaque niveau est une généralisation du principe de l'algorithme de Peterson pour deux threads : un thread donne, pour passer un niveau, d'abord la priorité aux autres threads avant de passer lui-même soit si (1) il n'y a pas d'autre thread en attente ou (2) un thread arrivant après lui a donné la priorité.
+La situation (2) est possible lorsque qu'un nouveau thread s'est déclaré comme étant la "victime" pour rester bloqué à ce niveau.
+Ces threads sont indiqués avec la lettre (V) sur la figure.
 Par exemple, le thread T1 a pu avancer dans les niveaux 3 et plus car aucun thread n'était en attente au même niveau ou à un niveau supérieur.
 Le thread T5 est lui en attente au deuxième niveau car il s'y est déclaré comme la victime (et donc a donné la priorité aux autres threads alors en attente sur ce niveau).
-L'arrivée du thread T3 à ce niveau va amener T3 à se déclarer la victime à sa place, et permettre le progrès de T5 au niveau suivant, tandis que T3 restera bloqué.
+L'arrivée du thread T3 à ce niveau va amener T3 à se déclarer comme victime à sa place, et permettre le progrès de T5 au niveau suivant, tandis que T3 restera bloqué.
 De la même façon, le progrès de T3 est rendu possible par l'arrivée du thread T8 au tout premier niveau, prenant la place de T3 en tant que victime pour ce niveau.
 
 Une mise en œuvre de l'algorithme du filtre utilise deux tableaux partagés de taille N, initialisés comme suit :
@@ -299,7 +302,7 @@ Le code ci-dessous représente l'algorithme suivi par le thread *i*.
 Un thread *i* arrivant dans un niveau ne va progresser au niveau suivant que lorsque l'un de ces deux conditions est remplie :
 
 - La première condition est qu'il n'existe aucun thread en attente au même niveau ou dans un niveau supérieur. Cela est typiquement le cas lorsqu'aucun thread ne cherche à exécuter sa section critique. Le thread *i* va alors progresser dans les niveaux un à un en se déclarant comme la victime, puis en constatant que la voie est libre aux niveaux supérieurs.
-- La seconde condition est qu'un autre thread soit arrivé au même niveau, permettant au premier de progresser. En effet, ce second thread aura alors positionné la case du tableau ``victim[L]`` à son identifiant, et devient de fait la victime, bloqué à ce niveau : au plus N-L threads pourront ainsi accéder au niveau L.
+- La seconde condition est qu'un autre thread soit arrivé au même niveau, permettant au premier de progresser. En effet, ce second thread aura alors écrit dans la case du tableau ``victim[L]`` son propre identifiant, devenant de ce fait la victime bloquée à ce niveau : au plus N-L threads pourront ainsi accéder au niveau L.
 
 A la sortie de sa section critique un thread *i* va simplement indiquer qu'il relâche l'exclusion mutuelle en écrivant 0 dans ``level[i]``, ce qui va libérer les threads en attente aux niveaux inférieurs.
 
@@ -321,34 +324,38 @@ On suppose que le thread T3 est déjà dans sa section critique et que les threa
 L'entrée dans le filtre pour T1 précède strictement l'entrée de T2.
 On voit que T1 se déclare comme la victime et reste bloqué au premier niveau (1).
 L'arrivée de T2 fait que ce dernier se déclare comme victime au niveau 1 à la place de T1 (2).
-T1 pourrait alors accéder au niveau 2, mais entre temps le thread est passé dans l'état Ready, i.e. le scheduler lui a dé-alloué le processeur qu'il occupait.
+T1 pourrait alors accéder au niveau 2, mais entre temps le thread est passé dans l'état Ready, c'est à dire que le scheduler lui a dé-alloué le processeur qu'il occupait.
 Lorsque T3 termine sa section critique (3), T2 ne peut pas progresser car il est toujours bloqué au niveau 1 : sa condition ``t_niv_sup_egal`` est toujours vrai car T1 est présent au niveau 1 (et ce bien que T1 ne puisse pourtant pas s'exécuter et passer au niveau 2 tant que celui-ci n'a pas accès à un processeur).
 Considérons ensuite que T3 souhaite de nouveau accéder à sa section critique.
 T3 entre au niveau 1 et s'y déclare comme la victime (4).
 T2 peut ainsi passer au niveau 2, puis entrer dans sa section critique (5).
 Ainsi, on observe que T2 a pu accéder à sa section critique avant T1 bien que l'accès au filtre ait été fait après celui-ci.
- 
+
 La garantie d'équité pour l'accès à la section critique n'est pas toujours nécessaire et elle n'est pas toujours désirable d'un point de vue des performances.
 Ici, pour respecter l'ordre d'arrivée, il aurait été nécessaire de bloquer non seulement T2 mais aussi T3 tant que T1 n'a pas accès à un processeur pour exécuter sa section critique.
 Cette attente peut être significativement plus longue que le temps nécessaire à T2 et T4 pour parcourir les niveaux du filtre et exécuter plusieurs fois leur sections critiques.
+Cette attente peut être particulièrement problématique si un temps important s'écoule avant que T1 ne soit assigné à un processeur, ce qui peut être le cas par exemple dans un système fort chargé en threads de différents programmes, ou bien encore si le thread T1 n'a pas une priorité élevée comme nous le verrons dans le chapitre consacré aux politiques de scheduling.
 
 Algorithme de la boulangerie (Bakery) de Lamport
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-L'algorithme de la boulangerie (Bakery algorithm) a été proposé par Leslie Lamport, un grand précurseur de l'étude formelle de la synchronisation des processus et par ailleurs auteur du logiciel Latex.
-Il permet de résoudre le problème de l'exclusion mutuelle avec des garanties d'équité.
+L'algorithme de la boulangerie (Bakery algorithm) a été proposé par Leslie Lamport, un grand précurseur de l'étude formelle de la synchronisation des processus.
+Lamport a reçu en 2013 le prix Turing, qui est la récompense la plus prestigieuse en informatique, souvent comparée à un prix Nobel.
+Il est par ailleurs l'auteur du logiciel Latex.
+L'algorithme Bakery permet de résoudre le problème de l'exclusion mutuelle en offrant des garanties d'équité.
 
 .. note:: Définir la notion d'équité
 
  On distingue dans un algorithme d'exclusion mutuelle tel que l'algorithme de Peterson ou le Bakery algorithm deux phases :
  
- - Une première phase (doorway) pendant laquelle le thread configure des ressources (variables locales). Cette étape termine en un nombre de pas borné, i.e., elle ne comporte pas de boucles;
- - Une deuxième phase (waiting) pendant laquelle le thread vérifie de façon continue qu'une condition est vérifiée pour entrer dans sa section critique.
+ - Une première phase (doorway) pendant laquelle le thread configure des ressources (variables locales). Cette étape termine en un nombre de pas borné, i.e., elle ne comporte pas de boucle;
+ - Une deuxième phase (waiting) pendant laquelle le thread vérifie de façon continue si une condition est vérifiée pour entrer dans sa section critique.
  
- La garantie formelle d'équité stipule qu'un thread TA qui termine sa phase doorway avant le début de la phase doorway d'un thread TB a la garantie de pouvoir accéder à sa section mutuelle avant TB.
+ La garantie formelle d'équité stipule qu'un thread TA qui termine sa phase doorway avant le début de la phase doorway d'un thread TB a la garantie de pouvoir accéder à sa section mutuelle avant que TB ne puisse exécuter la sienne.
  Dans le cas où les deux phases doorway seraient concurrentes alors l'ordre d'accès à la section critique est arbitraire.
+ Il existe aussi des définitions plus souples de l'équité, autorisant un nombre borné de passages de TB devant TA, mais elles dépassent le cadre de ce cours.
 
-L'algorithme Bakery utilise un principe simple, qui est proche d'une situation de la vie courante dans un magasin (d'où son nom).
+L'algorithme Bakery utilise un principe simple, qui est proche d'une situation de la vie courante (d'où il tire son nom).
 Un thread souhaitant accéder à sa section critique obtient tout d'abord un numéro d'ordre, un peu comme la machine distribuant des tickets à l'entrée d'un magasin.
 Ensuite, ce thread attend que les threads avec un ticket de numéro plus élevé aient terminé leur section critique avant de pouvoir accéder à la sienne.
 
@@ -443,7 +450,7 @@ Par :
  Imaginons que deux threads T1 et T2 sont en état Ready après avoir été interrompus lors de l'exécution de la section waiting (la répétition de la boucle ``do {...} while();``).
  T1 a un ticket de valeur 24, et T2 un ticket de valeur 23.
  Si le scheduler passe T1 en Running en lui octroyant un processeur, T1 va s'exécuter et utiliser du temps processeur pour rien, puisqu'il sera en attente que T2 s'exécute et passe sa section critique.
- Le scheduler n'a pas de moyen, dans ce cas, de savoir que l'exécution de T2 est plus prioritaire que celle de T1 pour permettra à l'ensemble des threads de réaliser du progrès.
+ Le scheduler n'a pas de moyen, dans ce cas, de savoir que l'exécution de T2 est plus prioritaire que celle de T1 pour permettra à l'ensemble des threads de progresser.
  
  La mise en œuvre de l'exclusion mutuelle au niveau du noyau, en passant un thread souhaitant accéder à une section mutuelle bloquée en attente dans une file spécifique, permet de résoudre ce problème : les threads, comme T1, en attente d'une condition, ne sont pas en état Ready et on évite qu'ils exécutent de coûteuses boucles de vérification pour rien.
  Ceci est toujours bénéfique dans le cas d'un mono-processeur.
@@ -458,15 +465,15 @@ Utilisation d'instructions atomiques
 
 Sur les ordinateurs actuels, il devient difficile d'utiliser les algorithmes de Peterson, du filtre, ou de Bakery tel qu'ils ont été décrits précédemment et ce pour trois raisons.
 
-Premièrement, ces algorithmes nécessitent de connaître le nombre de threads pouvant potentiellement accéder de façon concurrente à leur section critique.
+**(1)** Premièrement, ces algorithmes nécessitent de connaître le nombre de threads pouvant potentiellement accéder de façon concurrente à leur section critique.
 Ce nombre n'est pas toujours connu à l'avance, ce qui limite les possibilités de fournir des algorithmes génériques.
 Si on utilise un nombre maximal de threads comme une limite haute de la concurrence, alors le coût en mémoire (taille des tableaux partagés) et en temps d'exécution (e.g. parcours de ces tableaux pour l'algorithme Bakery ou parcours des filtres à différents niveaux pour l'algorithme du filtre) deviennent très importants.
 
-Deuxièmement, les compilateurs C sont capables d'optimiser le code qu'ils génèrent.
+**(2)** Deuxièmement, les compilateurs C sont capables d'optimiser le code qu'ils génèrent.
 Pour cela, ils analysent le programme à compiler et peuvent supprimer des instructions qui leur semblent être inutiles.
 Dans le cas de l'algorithme de Peterson, le compilateur pourrait très bien considérer que la boucle ``while`` est inutile puisque les variables ``turn`` et ``flag`` ont été initialisées juste avant d'entrer dans la boucle.
 
-La troisième raison est que sur un ordinateur multiprocesseur, chaque processeur peut réordonner les accès à la mémoire automatiquement afin d'en optimiser les performances [McKenney2005]_.
+**(3)** La troisième raison est que sur un ordinateur multiprocesseur, chaque processeur peut réordonner les accès à la mémoire automatiquement afin d'en optimiser les performances [McKenney2005]_.
 Cela a comme conséquence que certaines lectures et écritures en mémoires peuvent se faire dans un autre ordre que celui indiqué dans le programme sur certaines architectures de processeurs.
 Si dans l'algorithme de Peterson le thread ``A`` lit la valeur de ``flag[B]`` alors que l'écriture en mémoire pour ``flag[A]`` n'a pas encore été effectuée, une violation de la section critique est possible.
 En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle ``while`` avant que la mise à jour de leur drapeau n'aie été faite effectivement en mémoire.
@@ -481,14 +488,14 @@ En effet, dans ce cas les deux threads peuvent tous les deux passer leur boucle 
  Cela requiert d'utiliser des opérations de barrières mémoires (memory fences) en plus de la déclaration comme ``volatile`` de la variable partagée.
  L'instruction  ``MFENCE`` ordonne ainsi au processeur de terminer les opérations mémoires en cours, tandis que ``LFENCE``, ``SFENCE`` permettent de terminer les opérations de lecture ou d'écriture, respectivement.
  L'utilisation correcte des barrières mémoires est très complexe en pratique.
- Elle est donc réservée pour du code de très bas niveau, par exemple dans les couches du noyau les plus proches du matériel.
+ Elle est donc réservée pour du code de très bas niveau, par exemple dans les couches du noyau les plus proches du matériel ou dans des librairies mettant en œuvre des structures de données concurrentes à très haute performance.
 
-La nécessité de fournir des primitives de synchronisation (entre autres, d'exclusion mutuelle) génériques et efficaces a amené les fabricants de processeurs à enrichir les jeux d'instructions avec des opérations spécifiques.
+La nécessité de fournir des primitives de synchronisation (entre autres, d'exclusion mutuelle) génériques et efficaces a amené les fabricants de processeurs à enrichir les jeux d'instructions avec des opérations dédiées.
 Ces instructions mettent en œuvre des opérations atomiques.
 Une :term:`opération atomique` est une opération qui, lorsqu'elle est exécutée sur un processeur, ne peut pas être interrompue par l'arrivée d'une interruption.
 Ces opérations permettent généralement de manipuler en même temps un registre et une adresse en mémoire.
 En plus de leur caractère ininterruptible, l'exécution de ces instructions atomiques par un ou plusieurs processeur implique une coordination des processeurs pour l'accès à la zone mémoire référencée dans l'instruction. 
-Tous les accès à la mémoire faits par ces instructions sont ordonnés par les processeurs de façon à ce qu'ils soient toujours visibles par tous les processeurs dans le même ordre (e.g. si un processeur A voit les opérations atomiques op1, op2, op3 dans cet ordre, alors c'est le cas de tous les autres processeurs, ce qui n'est pas nécessairement le cas pour les accès mémoires traditionnels).
+Tous les accès à la mémoire faits par ces instructions sont ordonnés par les processeurs de façon à ce qu'ils soient toujours visibles par tous les processeurs dans le même ordre (e.g. si un processeur A voit l'effet des opérations atomiques op1, op2, op3 dans cet ordre, alors c'est le cas de tous les autres processeurs, ce qui n'est pas nécessairement le cas pour les écritures en mémoire traditionnelles).
 
 Plusieurs types d'instructions atomiques sont supportés par différentes architectures de processeurs.
 A titre d'exemple, considérons l'instruction atomique ``xchg`` qui est supportée par les processeurs [IA32]_. 
@@ -519,7 +526,7 @@ Pour sortir de section critique, il suffit d'exécuter les instructions à parti
      movl    $1, %eax      ; %eax=1
      xchgl   %eax, (lock)  ; instruction atomique, échange (lock) et %eax
                            ; après exécution, %eax contient la donnée qui était
-                           ; dans lock et lock la valeur 1
+                           ; dans lock, et lock contient la valeur 1
      testl   %eax, %eax    ; met le flag ZF à vrai si %eax contient 0
      jnz     enter         ; retour à enter: si ZF n'est pas vrai
      ret
@@ -532,7 +539,7 @@ Pour sortir de section critique, il suffit d'exécuter les instructions à parti
 Pour bien comprendre le fonctionnement de cette solution, il faut analyser les instructions qui composent chaque routine en assembleur.
 La routine ``leave`` est la plus simple.
 Elle place la valeur ``0`` à l'adresse ``lock``.
-Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fait séquentiellement [#barriere_possible]_..
+Elle utilise une instruction atomique de façon à garantir que cet accès en mémoire se fait séquentiellement [#barriere_possible]_.
 Lorsque ``lock`` vaut ``0``, cela indique qu'aucun thread ne se trouve en section critique.
 Si ``lock`` contient la valeur ``1``, cela indique qu'un thread est actuellement dans sa section critique et qu'aucun autre thread ne peut y entrer.
 
@@ -543,7 +550,7 @@ Après l'exécution de cette instruction atomique, l'adresse ``lock`` contiendra
 Par contre, le registre ``%eax`` contiendra la valeur qui se trouvait à l'adresse ``lock`` avant l'exécution de ``xchgl``.
 C'est en testant cette valeur que le thread pourra déterminer si il peut entrer en section critique ou non. Deux cas sont possibles :
 
- a. ``%eax==0`` après exécution de l'instruction ``xchgl  %eax, (lock)``. Dans ce cas, le thread peut accéder à sa section critique. En effet, cela indique qu'avant l'exécution de cette instruction l'adresse ``lock`` contenait la valeur ``0``. Cette valeur indique que la section critique était libre avant l'exécution de l'instruction ``xchgl  %eax, (lock)``. En outre, cette instruction a placé la valeur ``1`` à l'adresse ``lock``, ce qui indique qu'un thread exécute actuellement sa section critique. Si un autre thread exécute l'instruction ``xchgl  %eax, (lock)`` à cet instant, il récupèrera la valeur ``1`` dans ``%eax`` et ne pourra donc pas entrer en section critique. Si deux threads exécutent simultanément et sur des processeurs différents l'instruction ``xchgl  %eax, (lock)``, la coordination des accès mémoires entre les processeurs garantit que ces accès mémoires seront séquentiels (l'un précédera l'autre). Le thread qui bénéficiera du premier accès à la mémoire sera celui qui récupèrera la valeur ``0`` dans ``%eax`` et pourra entrer dans sa section critique. Le ou les autres threads récupéreront la valeur ``1`` dans ``%eax``.
+ a. ``%eax==0`` après exécution de l'instruction ``xchgl  %eax, (lock)``. Dans ce cas, le thread peut accéder à sa section critique. En effet, cela indique qu'avant l'exécution de cette instruction l'adresse ``lock`` contenait la valeur ``0``. Cette valeur indique que la section critique était libre avant l'exécution de l'instruction ``xchgl %eax, (lock)``. En outre, cette instruction a placé la valeur ``1`` à l'adresse ``lock``, ce qui indique qu'un thread exécute actuellement sa section critique. Si un autre thread exécute l'instruction ``xchgl  %eax, (lock)`` à cet instant, il récupèrera la valeur ``1`` dans ``%eax`` et ne pourra donc pas entrer en section critique. Si deux threads exécutent simultanément et sur des processeurs différents l'instruction ``xchgl  %eax, (lock)``, la coordination des accès mémoires entre les processeurs garantit que ces accès mémoires seront séquentiels (l'un précédera l'autre). Le thread qui bénéficiera du premier accès à la mémoire sera celui qui récupèrera la valeur ``0`` dans ``%eax`` et pourra entrer dans sa section critique. Le ou les autres threads récupéreront la valeur ``1`` dans ``%eax``.
  b. ``%eax==1`` après exécution de l'instruction ``xchgl %eax, (lock)``. Dans ce cas, le thread ne peut entrer en section critique et il entame une boucle active durant laquelle il va continuellement exécuter la boucle ``enter: movl ... jnz enter``.
 
 Verrous par attente active (spinlocks)
@@ -553,7 +560,7 @@ L'ensemble des algorithmes d'exclusion mutuelle que nous avons vu dans ce chapit
 On les appelle des *spinlocks* en anglais, car un thread en attente, pour entrer dans sa section critique, boucle (*spin*) sur la vérification d'une condition.
 Par exemple, dans l'algorithme Bakery un thread boucle sur le parcours des deux tableaux partagés.
 Dans l'algorithme utilisant l'opération atomique ``xchgl`` ci-dessus, un thread bouclera sur la suite d'instruction entre l'adresse ``enter`` et l'instruction ``jnz``.
-L'exclusion mutuelle par attente active est mise en œuvre seulement en mode utilisateur.
+L'exclusion mutuelle par attente active peut être mise en œuvre seulement en mode utilisateur.
 Elle ne nécessite pas de support spécifique du système d'exploitation.
 
 Les mutex et les sémaphores POSIX que nous avons vu dans les chapitres précédents sont eux, au contraire, mis en œuvre avec le concours du système d'exploitation.
@@ -591,13 +598,13 @@ Dans un système multi-processeur, chaque processeur (ou chaque cœur) possède 
 La valeur stockée à une adresse donnée peut être mise à jour dans le cache d'un processeur, avant d'être propagée plus tard vers la mémoire principale (write-back).
 Une même adresse peut être présente dans le cache de *plusieurs* processeurs.
 Il est donc nécessaire de synchroniser les caches des différents processeurs pour éviter que deux processeurs puissent écrire de façon concurrente à la même adresse en mémoire.
-C'est le rôle d'un protocole de cohérence de caches.
+C'est le rôle d'un protocole de cohérence de cache.
 
 Il existe de nombreux protocoles de cohérence de cache mais nous nous contenterons de présenter le plus simple d'entre eux, le protocole MSI.
 Chaque processeur est connecté à un bus, auquel est aussi connecté la mémoire principale.
 Chaque contrôleur de cache (attaché à chaque processeur), ainsi que la mémoire principale, écoute ce bus en permanence.
 Un seul processeur peut envoyer un message à un moment donné sur le bus, et tous les messages sont vus par tous les processeurs (et la mémoire).
-La figure suivante présente un exemple avec 4 mots mémoires : A, B, C et D et 4 processeurs avec un cache de 4 entrées.
+La figure suivante présente un exemple avec 4 mots mémoires : A, B, C et D et 4 processeurs avec chacun un cache de 4 entrées.
 
  .. figure:: figures/cache_bus.png
     :align: center
@@ -607,7 +614,7 @@ Une entrée d'un cache peut prendre trois états possibles, M, S, ou I :
 
 - Une entrée dans l'état **M** (Modified) contient une valeur qui est plus récente que celle dans la mémoire principale, et seul ce processeur a une copie de cette entrée. Dans certaines architectures, cet état est aussi appelé **E** (Exclusive).
 - Une entrée dans l'état **S** (Shared) est partagée entre plusieurs caches, et la valeur stockée dans les différents caches est la même.
-- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer la dernière valeur associée à cette entrée.
+- Une entrée dans l'état **I** (Invalid) est invalide et ne peut plus être utilisée sans récupérer la dernière valeur associée à cette adresse.
 
 Avant de passer une entrée en état M, il est nécessaire d'invalider les entrées pour la même adresse dans les caches des autres processeurs.
 Par exemple, considérons que le processeur 1 possède l'adresse B dans son cache, ce qui est le cas des processeurs 2 et 3.
@@ -632,7 +639,7 @@ Les instructions atomiques comme ``xchgl`` impliquant une adresse mémoire doive
 Ce blocage du bus a un impact important sur la performance de l'ensemble des threads en cours d'exécution : les accès mémoire sont bloqués pour tous les processeurs en attendant que l'opération atomique sur un de ces processeurs soit terminée.
 
 Le coût du blocage du bus explique la performance décevante du code présenté précédemment, où chaque thread souhaitant accéder à sa section critique utilise une succession d'opérations ``xchgl`` continue.
-La situation est créée est illustrée par la figure ci-dessous.
+La situation créée est illustrée par la figure ci-dessous.
 
  .. figure:: figures/cmp_swap_bus.png
     :align: center
@@ -643,7 +650,7 @@ Le thread sur le CPU1 a accès à l'adresse mémoire en mode M dans son cache et
 Pendant ce temps, les opérations ``xchgl`` des threads sur les processeurs 2 et 3 sont bloquées en attendant la disponibilité du bus.
 Par ailleurs, le thread du processeur 4, indépendant des threads souhaitant accéder à leur section critique, voit ses opérations d'accès à la mémoire temporairement bloquées elles aussi.
 Une fois que le thread du processeur 1 aura gagné l'accès à sa section critique, il sera lui aussi sujet à un ralentissement car ses accès mémoire seront en concurrence avec les opérations ``xchgl`` continues des threads des processeurs 2 et 3.
-Le retard pris dans la section critique est, au final, au désavantage de ces derniers : avec les opérations atomiques en continu, ils retardent leur propre accès à leur section critique !
+Le retard pris dans la section critique est, au final, au désavantage de ces derniers : avec les opérations atomiques répétées en continu, ils retardent leur propre accès à leur section critique !
 
 Une solution simple pour pallier ce problème est de tirer parti du cache.
 Tant que la valeur du verrou est à 1, on sait qu'un thread est dans sa section critique et il est inutile de tenter continuellement d'effectuer l'opération ``xchgl`` : celle-ci ralentit le progrès de tous les threads et renverra toujours 1, entrainant une nouvelle boucle.
@@ -656,7 +663,7 @@ Cette situation est illustrée par la figure suivante.
 
 On appelle souvent cette solution le test-and-test-and-set, par opposition à la version de l'algorithme précédent qui est appelé test-and-set.
 L'idée est de ne tenter l'opération atomique ``xchgl``, qui teste et assigne (set) la valeur de façon atomique, que lorsque le verrou semble libre.
-Cette situation apparait lorsque le thread qui effectuait sa section critique écrit 0 dans le verrou : l'adresse devient en état M dans son cache après invalidation dans le cache des autres processeurs, qui lisent alors 0 grâce à une requête sur le bus.
+Cette situation apparait lorsque le thread qui effectuait sa section critique écrit 0 dans le verrou : l'entrée correspondant à cette adresse passe en état M dans son cache après invalidation dans le cache des autres processeurs, qui lisent alors 0 grâce à une requête sur le bus.
 Le pseudocode de cette opération peut être :
 
 .. code-block:: c
@@ -681,6 +688,7 @@ L'avantage de cette approche est qu'elle permet de s'adapter à la contention, e
 - Le deuxième avantage, l'évitement des pics de requêtes, est obtenu en ajoutant une part d'aléatoire dans le choix du délai d'attente. Le délai d'attente effectif est une portion aléatoire du temps maximal d'attente à chaque essai. Par exemple, si le délai minimal est de 10ns, alors la première attente pourrait être de 6ns, la deuxième (entre 0 et 20ns), de 17ns, et ainsi de suite.
 
 La définition du pseudo-code de ce dernier algorithme, que l'on peut appeler backoff-test-and-test-and-set, est laissé en exercice.
+Il est bien sûr important de ne pas utiliser d'appels systèmes (ou de librairies les utilisant) pour le mettre en œuvre, et donc de réaliser l'attente avec par exemple une boucle d'un nombre d'itération donnée n'utilisant que des valeurs dans des registres.
 
 .. todo:: inversion de priorité ?
 
