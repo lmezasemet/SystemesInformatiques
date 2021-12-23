@@ -184,7 +184,7 @@ Les scripts servent souvent à réaliser des opérations sur des fichiers, et il
  - ``-f file`` est vraie si ``file`` existe et est un fichier;
  - ``-s file`` est vraie si ``file`` n'est pas vide;
  - ``-r file``, ``-w file``, ``-x file`` est vraie si ``file`` peut, respectivement, être *lu*, *écrit* ou *exécuté* par l'utilisateur lançant le script;
- - ``-s file`` est vraie si ``file`` est le nom d'un répertoire.
+ - ``-d file`` est vraie si ``file`` est le nom d'un répertoire.
  
 L'exemple ci-dessous illustre l'utilisation des conditions sur les fichiers :
 
@@ -220,7 +220,7 @@ Cet exemple utilise, par ailleurs, une autre construction utile de `bash(1)`_ : 
 
 La boucle ``for`` peut aussi prendre comme entrée (i.e., la liste sur laquelle itérer) une expression utilisant des caractères *joker* ``*`` ou ``?``. `bash(1)`_ transforme alors l'expression en la liste des noms de fichiers et répertoires dans le répertoire courant correspondant à l'expression :
 
- - ``*`` représente n'importe quelle suite de caractères (y compris la chaîne vide). ``ab*xyz`` correspond à, par exemple, ``abcdxyz``, ``abzyz`` ou ``abcxyz`` mais pas à ``abcdyz``.
+ - ``*`` représente n'importe quelle suite de caractères (y compris la chaîne vide). ``ab*xyz`` correspond à, par exemple, ``abcdxyz``, ``abxyz`` ou ``abcxyz`` mais pas à ``abcdyz``.
  - ``?`` représente un caractère unique inconnu (mais pas la chaîne vide). ``ab?de`` correspond, ainsi, à ``abcde``, ``abXde`` mais pas à ``abde``.
  
 Voici un exemple de l'utilisation du caractère ``*``, qui calcule une signature de chaque fichier sous la forme d'un *hash*  `SHA-1 <https://fr.wikipedia.org/wiki/SHA-1>`_ :
